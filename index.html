@@ -100,7 +100,7 @@
                 <td>${m.discord_name || '-'}</td>
                 <td>${(m.courses || []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
                 <td><strong>${m.shift_count}</strong></td>
-                <td><small>${m.last_shift || '-'}</small></td>
+                <td><small>${m.last_shift ? new Date(m.last_shift).toLocaleDateString('cs-CZ') : '-'}</small></td>
                 <td>
                     <button class="small-btn" onclick="editMember(${m.id})">✏️</button>
                     <button class="small-btn" onclick="deleteMember(${m.id})">🗑️</button>
@@ -126,27 +126,30 @@
         const ids = [...new Set(Array.from(document.querySelectorAll('#shiftForm select')).map(s => s.value))].filter(v => v);
         if(!ids.length) return alert('Nikdo není vybrán!');
         
-        const date = new Date().toLocaleDateString('cs-CZ');
+        // OPRAVENO: ISO formát pro DB (YYYY-MM-DD)
+        const databaseDate = new Date().toISOString().split('T')[0];
         const status = document.getElementById('shift-status');
         
+        status.innerText = "Zapisuji...";
+        status.style.display = "block";
+        status.style.background = "#555";
+
         for(let id of ids) {
             const m = members.find(x => x.id == id);
             const { error } = await _db.from('members').update({ 
                 shift_count: (m.shift_count || 0) + 1, 
-                last_shift: date 
+                last_shift: databaseDate 
             }).eq('id', id);
             
             if (error) {
                 status.innerText = "CHYBA: " + error.message;
                 status.style.background = "red";
-                status.style.display = "block";
                 return;
             }
         }
         status.innerText = "ZAPSÁNO DO DATABÁZE!";
         status.style.background = "green";
-        status.style.display = "block";
-        loadData();
+        await loadData();
     }
 
     async function registerMember() {
@@ -160,14 +163,18 @@
         });
 
         if(error) alert(error.message);
-        else { alert("Registrován!"); loadData(); }
+        else { 
+            alert("Registrován!"); 
+            document.querySelectorAll('#registrace input[type=text]').forEach(i => i.value = '');
+            await loadData(); 
+        }
     }
 
     async function deleteMember(id) {
-        if(confirm("Smazat?")) {
+        if(confirm("Opravdu smazat?")) {
             const { error } = await _db.from('members').delete().eq('id', id);
             if(error) alert(error.message);
-            else loadData();
+            else await loadData();
         }
     }
 
@@ -177,7 +184,7 @@
         if(newShift !== null) {
             const { error } = await _db.from('members').update({ shift_count: parseInt(newShift) }).eq('id', id);
             if(error) alert(error.message);
-            else loadData();
+            else await loadData();
         }
     }
 
