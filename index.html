@@ -25,8 +25,10 @@
         .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
         .action-btn { background: var(--accent); color: white; border: none; padding: 15px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; font-size: 1.1em; margin-top: 20px; }
         .small-btn { background: #555; color: white; border: none; padding: 6px 10px; margin: 2px; border-radius: 4px; cursor: pointer; }
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 10px; margin: 15px 0; background: #222; padding: 10px; border-radius: 4px; }
+        .course-grid label { display: flex; align-items: center; gap: 5px; font-size: 0.85em; cursor: pointer; }
         #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--panel); padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; border: 1px solid var(--accent); }
+        .modal-content { background: var(--panel); padding: 25px; border-radius: 8px; width: 95%; max-width: 500px; border: 1px solid var(--accent); max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -51,9 +53,8 @@
                     <div class="form-row"><label>Hasič 1:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Hasič 2:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
-                    <h3>Druhý výjezd (PSA 117 MAN)</h3>
+                    <h3>Druhý výjezd (MAN)</h3>
                     <div class="form-row"><label>Velitel (V):</label><select data-role="V"></select></div>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
                     <div class="form-row"><label>Hasič 1:</label><select data-role="any"></select></div>
@@ -61,43 +62,36 @@
                     <div class="form-row"><label>Hasič 3:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Hasič 4:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
                     <h3>CAS 30 (PSA 102)</h3>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
                     <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
-                    <h3>AZ 30 (PSA 103 Scania)</h3>
+                    <h3>AZ 30 (Scania)</h3>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
                     <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
-                    <h3>RZA (PSA 106 VW)</h3>
+                    <h3>RZA (VW)</h3>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
                     <div class="form-row"><label>Velitel/Hasič:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
-                    <h3>VPP (PSA 465 Kodiaq)</h3>
+                    <h3>VPP (Kodiaq)</h3>
                     <div class="form-row"><label>Vyšetřovatel 1:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Vyšetřovatel 2:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
-                    <h3>Sanita (PSA 118 Crafter)</h3>
+                    <h3>Sanita (Crafter)</h3>
                     <div class="form-row"><label>Řidič/Zdrav.:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Zdravotník:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
                     <h3>KOPIS</h3>
                     <div class="form-row"><label>OD JPO:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>OD TL:</label><select data-role="any"></select></div>
                 </div>
-
                 <div class="vehicle-card">
                     <h3>Ostatní technika</h3>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
@@ -114,9 +108,19 @@
         <div class="form-row"><label>Příjmení:</label><input type="text" id="reg-lname"></div>
         <div class="form-row"><label>Discord:</label><input type="text" id="reg-discord"></div>
         <div class="form-row"><label>Hodnost:</label><select id="reg-rank"><option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option><option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option><option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option></select></div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;" id="reg-courses">
-            <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
-            <label><input type="checkbox" value="KBJ"> KBJ</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="LI"> LI</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="CH"> CH</label> <label><input type="checkbox" value="L"> L</label> <label><input type="checkbox" value="OD"> OD</label> <label><input type="checkbox" value="D"> D</label> <label><input type="checkbox" value="ZPP"> ZPP</label>
+        <p style="margin: 10px 0 5px 0; font-weight: bold;">Kurzy:</p>
+        <div class="course-grid" id="reg-courses">
+            <label><input type="checkbox" value="V"> V</label>
+            <label><input type="checkbox" value="S"> S</label>
+            <label><input type="checkbox" value="Z"> Z</label>
+            <label><input type="checkbox" value="KBJ"> KBJ</label>
+            <label><input type="checkbox" value="P"> P</label>
+            <label><input type="checkbox" value="LI"> LI</label>
+            <label><input type="checkbox" value="D"> D</label>
+            <label><input type="checkbox" value="L"> L</label>
+            <label><input type="checkbox" value="CH"> CH</label>
+            <label><input type="checkbox" value="ZPP"> ZPP</label>
+            <label><input type="checkbox" value="OD"> OD</label>
         </div>
         <button class="action-btn" onclick="registerMember()">➕ Registrovat</button>
     </div>
@@ -136,11 +140,21 @@
         <input type="hidden" id="edit-id">
         <div class="form-row"><label>Hodnost:</label><select id="edit-rank"><option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option><option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option><option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option></select></div>
         <div class="form-row"><label>Směny:</label><input type="number" id="edit-count"></div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;" id="edit-courses-div">
-            <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
-            <label><input type="checkbox" value="KBJ"> KBJ</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="LI"> LI</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="CH"> CH</label> <label><input type="checkbox" value="L"> L</label> <label><input type="checkbox" value="OD"> OD</label> <label><input type="checkbox" value="D"> D</label> <label><input type="checkbox" value="ZPP"> ZPP</label>
+        <p style="margin: 10px 0 5px 0; font-weight: bold;">Kurzy:</p>
+        <div class="course-grid" id="edit-courses-div">
+            <label><input type="checkbox" value="V"> V</label>
+            <label><input type="checkbox" value="S"> S</label>
+            <label><input type="checkbox" value="Z"> Z</label>
+            <label><input type="checkbox" value="KBJ"> KBJ</label>
+            <label><input type="checkbox" value="P"> P</label>
+            <label><input type="checkbox" value="LI"> LI</label>
+            <label><input type="checkbox" value="D"> D</label>
+            <label><input type="checkbox" value="L"> L</label>
+            <label><input type="checkbox" value="CH"> CH</label>
+            <label><input type="checkbox" value="ZPP"> ZPP</label>
+            <label><input type="checkbox" value="OD"> OD</label>
         </div>
-        <button class="action-btn" onclick="saveEdit()">💾 Uložit</button>
+        <button class="action-btn" onclick="saveEdit()">💾 Uložit změny</button>
         <button class="action-btn" style="background: #555; margin-top: 5px;" onclick="closeEdit()">Zrušit</button>
     </div>
 </div>
@@ -228,7 +242,6 @@
         const selects = document.querySelectorAll('#shiftForm select');
         const ids = [...new Set(Array.from(selects).map(s => s.value))].filter(v => v);
         if(!ids.length) return alert("Vyberte aspoň někoho!");
-        
         const date = new Date().toISOString().split('T')[0];
         for(let id of ids) {
             const m = members.find(x => String(x.id) === String(id));
@@ -242,9 +255,27 @@
         const fn = document.getElementById('reg-fname').value;
         const ln = document.getElementById('reg-lname').value;
         const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c => c.value);
-        await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
-        alert("Hotovo!");
-        await loadData();
+        
+        if(!fn || !ln) return alert("Zadejte jméno a příjmení!");
+
+        const { error } = await _db.from('members').insert({ 
+            first_name: fn, 
+            last_name: ln, 
+            rank: document.getElementById('reg-rank').value, 
+            courses: crs, 
+            shift_count: 0 
+        });
+
+        if (error) {
+            alert("Chyba při registraci: " + error.message);
+        } else {
+            alert("Registrováno!");
+            // Vymazat formulář
+            document.getElementById('reg-fname').value = "";
+            document.getElementById('reg-lname').value = "";
+            document.querySelectorAll('#reg-courses input').forEach(c => c.checked = false);
+            await loadData();
+        }
     };
 
     window.switchTab = (event, id) => {
