@@ -217,6 +217,19 @@ async function saveEdit(){
     loadData();
 }
 
+async function deleteMember(id){
+    if(!confirm("Opravdu chceš smazat tohoto člena?")) return;
+    
+    const { error } = await _db.from('members').delete().eq('id', id);
+    if(error){
+        alert("Chyba mazání: " + error.message);
+        return;
+    }
+    alert("Člen byl smazán!");
+    loadData();
+}
+
+
 function closeEdit(){document.getElementById('edit-modal').style.display='none';}
 
 document.getElementById('date-display').innerText=new Date().toLocaleDateString('cs-CZ');
