@@ -195,15 +195,19 @@ async function registerMember(){
 
 async function submitShift(){
     // všechny selecty, jen ty s vybranou hodnotou
-    const ids = [...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value).filter(v => v))];
-    if(ids.length === 0) return alert("Nikdo není vybrán!"); // alespoň jeden musí být
-    const date = new Date().toLocaleDateString('cs-CZ');
+    const ids = [...new Set(Array.from(document.querySelectorAll('select'))
+        .map(s => s.value)
+        .filter(v => v && v.trim() !== ''))];
+    if(ids.length === 0) return alert("Nikdo není vybrán!");
+    // datum ve formátu ISO YYYY-MM-DD
+    const date = new Date().toISOString().split('T')[0];
     for(let id of ids){
         const m = members.find(x => String(x.id) === String(id));
         if(m){
-            await _db.from('members')
+            const { error } = await _db.from('members')
                 .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
-                .eq('id', id);
+                .eq('id', m.id); // id musí přesně odpovídat typu v databázi
+            if(error) console.error("Supabase error:", error);
         }
     }
     alert("Směna zapsána!");
