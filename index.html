@@ -145,12 +145,13 @@ async function loadData(){
     renderSelects();
 }
 
+
 function renderTable(){
     const tbody = document.querySelector('#members-table tbody');
-
-    // seřadíme členy podle hodnosti
-    const sortedMembers = [...members].sort((a, b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
-
+    // seřadíme členy podle hierarchie hodností z RANKS
+    const sortedMembers = [...members].sort((a, b) => {
+        return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank);
+    });
     tbody.innerHTML = sortedMembers.map(m=>`
         <tr>
             <td>${m.rank}</td>
