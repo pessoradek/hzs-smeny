@@ -194,7 +194,7 @@ async function registerMember(){
 }
 
 async function submitShift(){
-    // vezmeme všechny selecty, vyfiltrujeme jen vyplněné
+    // všechny selecty, jen ty s vybranou hodnotou
     const ids = [...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value).filter(v => v))];
     if(ids.length === 0) return alert("Nikdo není vybrán!"); // alespoň jeden musí být
     const date = new Date().toLocaleDateString('cs-CZ');
@@ -206,10 +206,10 @@ async function submitShift(){
                 .eq('id', id);
         }
     }
-
     alert("Směna zapsána!");
     loadData();
 }
+
 
 function switchTab(e,id){
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
