@@ -3,31 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HZS Směnovnice - Kompletní Výjezd</title>
+    <title>HZS Směnovnice</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #1a1a1a; --text: #e0e0e0; --accent: #e63946; --panel: #2d2d2d; --border: #444; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .tabs { margin-bottom: 20px; display: flex; gap: 5px; position: sticky; top: 0; z-index: 100; background: var(--bg); padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .tabs { margin-bottom: 20px; display: flex; gap: 5px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 100; }
         .tab-btn { background: var(--panel); border: 1px solid var(--border); color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
         .tab-btn.active { background: var(--accent); font-weight: bold; }
         .section { display: none; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
         .section.active { display: block; }
-        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; }
-        .vehicle-card { background: #333; border: 1px solid var(--border); padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); height: fit-content; }
-        .vehicle-card h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 1.1em; }
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .vehicle-card { background: #333; border: 1px solid var(--border); padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); }
+        .vehicle-card h3 { margin: 0 0 10px 0; color: var(--accent); font-size: 1.1em; border-bottom: 1px solid #444; padding-bottom: 5px; }
         .form-row { display: flex; align-items: center; margin-bottom: 8px; }
-        .form-row label { width: 140px; font-weight: bold; font-size: 0.9em; }
-        select, input { flex: 1; padding: 6px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; }
+        .form-row label { width: 130px; font-size: 0.85em; font-weight: bold; }
+        select, input { flex: 1; padding: 6px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; font-size: 0.9em; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
         .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
         .action-btn { background: var(--accent); color: white; border: none; padding: 15px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; font-size: 1.1em; margin-top: 20px; }
-        .small-btn { background: #555; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer; }
-        
+        .small-btn { background: #555; color: white; border: none; padding: 6px 10px; margin: 2px; border-radius: 4px; cursor: pointer; }
         #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--panel); padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; border: 1px solid var(--accent); }
+        .modal-content { background: var(--panel); padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
@@ -42,7 +41,7 @@
     </div>
 
     <div id="rozkaz" class="section active">
-        <h2 id="date-display"></h2>
+        <h2 id="date-display" style="margin-top:0"></h2>
         <form id="shiftForm">
             <div class="grid-layout">
                 <div class="vehicle-card">
@@ -76,27 +75,21 @@
                 </div>
 
                 <div class="vehicle-card">
-                    <h3>RZA (PSA 106 VW Transporter)</h3>
+                    <h3>RZA (PSA 106 VW)</h3>
                     <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
                     <div class="form-row"><label>Velitel/Hasič:</label><select data-role="any"></select></div>
                 </div>
 
                 <div class="vehicle-card">
-                    <h3>VPP (PSA 465 - Kodiaq II.)</h3>
+                    <h3>VPP (PSA 465 Kodiaq)</h3>
                     <div class="form-row"><label>Vyšetřovatel 1:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Vyšetřovatel 2:</label><select data-role="any"></select></div>
                 </div>
 
                 <div class="vehicle-card">
-                    <h3>Sanita (PSA 118 - VW Crafter FR)</h3>
-                    <div class="form-row"><label>Řidič/Zdravotník:</label><select data-role="any"></select></div>
+                    <h3>Sanita (PSA 118 Crafter)</h3>
+                    <div class="form-row"><label>Řidič/Zdrav.:</label><select data-role="any"></select></div>
                     <div class="form-row"><label>Zdravotník:</label><select data-role="any"></select></div>
-                </div>
-
-                <div class="vehicle-card">
-                    <h3>Ostatní technika</h3>
-                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
-                    <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
                 </div>
 
                 <div class="vehicle-card">
@@ -105,7 +98,7 @@
                     <div class="form-row"><label>OD TL:</label><select data-role="any"></select></div>
                 </div>
             </div>
-            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU PRO VŠECHNY VYBRANÉ</button>
+            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU</button>
         </form>
     </div>
 
@@ -141,21 +134,21 @@
             <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
             <label><input type="checkbox" value="KBJ"> KBJ</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="LI"> LI</label>
         </div>
-        <button class="action-btn" onclick="saveEdit()">💾 Uložit změny</button>
+        <button class="action-btn" onclick="saveEdit()">💾 Uložit</button>
         <button class="action-btn" style="background: #555; margin-top: 5px;" onclick="closeEdit()">Zrušit</button>
     </div>
 </div>
 
 <script>
     const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-    const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+    const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
     const _db = window.supabase.createClient(sb_url, sb_key);
 
     let members = [];
 
     async function loadData() {
         const { data, error } = await _db.from('members').select('*');
-        if (error) return console.error(error);
+        if (error) return;
         members = data || [];
         renderTable();
         renderSelects();
@@ -171,18 +164,31 @@
                 <td>${(m.courses || []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
                 <td><strong>${m.shift_count}</strong></td>
                 <td>
-                    <button class="small-btn" onclick="window.openEdit('${m.id}')">✏️</button>
-                    <button class="small-btn" onclick="window.deleteMember('${m.id}')">🗑️</button>
+                    <button class="small-btn" onclick="openEdit('${m.id}')">✏️</button>
+                    <button class="small-btn" onclick="deleteMember('${m.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
+    }
+
+    function renderSelects() {
+        document.querySelectorAll('select[data-role]').forEach(sel => {
+            const role = sel.dataset.role;
+            let h = '<option value="">-- vybrat --</option>';
+            members.forEach(m => {
+                if (role === 'any' || (m.courses && m.courses.includes(role))) {
+                    h += `<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
+                }
+            });
+            sel.innerHTML = h;
+        });
     }
 
     window.openEdit = (id) => {
         const m = members.find(x => String(x.id) === String(id));
         if(!m) return;
         document.getElementById('edit-id').value = m.id;
-        document.getElementById('edit-name').innerText = `Upravit: ${m.first_name} ${m.last_name}`;
+        document.getElementById('edit-name').innerText = m.first_name + ' ' + m.last_name;
         document.getElementById('edit-rank').value = m.rank;
         document.getElementById('edit-count').value = m.shift_count;
         document.querySelectorAll('#edit-courses-div input').forEach(ch => {
@@ -206,57 +212,42 @@
     };
 
     window.deleteMember = async (id) => {
-        if(!confirm("Smazat?")) return;
-        await _db.from('members').delete().eq('id', id);
-        await loadData();
+        if(confirm("Smazat?")) {
+            await _db.from('members').delete().eq('id', id);
+            await loadData();
+        }
     };
 
-    function renderSelects() {
-        document.querySelectorAll('select[data-role]').forEach(sel => {
-            const role = sel.dataset.role;
-            let h = '<option value="">-- vybrat --</option>';
-            members.forEach(m => {
-                if (role === 'any' || (m.courses && m.courses.includes(role))) {
-                    h += `<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
-                }
-            });
-            sel.innerHTML = h;
-        });
-    }
-
-    async function submitShift() {
+    window.submitShift = async () => {
         const selects = document.querySelectorAll('#shiftForm select');
         const ids = [...new Set(Array.from(selects).map(s => s.value))].filter(v => v);
-        if(!ids.length) return alert("Vyberte aspoň jednoho člena!");
+        if(!ids.length) return alert("Vyberte aspoň někoho!");
         
         const date = new Date().toISOString().split('T')[0];
         for(let id of ids) {
-            const m = members.find(x => x.id == id);
-            await _db.from('members').update({ 
-                shift_count: (m.shift_count || 0) + 1, 
-                last_shift: date 
-            }).eq('id', id);
+            const m = members.find(x => String(x.id) === String(id));
+            if(m) await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', id);
         }
-        alert("Směna zapsána všem vybraným!");
+        alert("Zapsáno!");
         await loadData();
-    }
+    };
 
-    async function registerMember() {
+    window.registerMember = async () => {
         const fn = document.getElementById('reg-fname').value;
         const ln = document.getElementById('reg-lname').value;
         const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c => c.value);
         await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
-        alert("Registrován!");
+        alert("Hotovo!");
         await loadData();
-    }
+    };
 
-    function switchTab(event, id) {
+    window.switchTab = (event, id) => {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
         loadData();
-    }
+    };
 
     document.getElementById('date-display').innerText = "Dnešní datum: " + new Date().toLocaleDateString('cs-CZ');
     loadData();
