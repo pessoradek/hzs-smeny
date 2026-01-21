@@ -23,7 +23,16 @@
         .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
         .action-btn { background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; }
         .small-btn { background: #555; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer; }
-        .small-btn:hover { background: #777; }
+        
+        /* STYL PRO EDITAČNÍ OKNO */
+        #edit-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--panel); padding: 30px; border-radius: 8px; width: 90%; max-width: 500px;
+            border: 1px solid var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -42,10 +51,10 @@
         <form id="shiftForm">
             <div class="vehicle-card">
                 <strong>První výjezd (Scania)</strong>
-                <div class="form-row"><label>Strojník (S):</label><select data-role="S" name="v1_s"></select></div>
-                <div class="form-row"><label>Velitel (V):</label><select data-role="V" name="v1_v"></select></div>
-                <div class="form-row"><label>Hasič 1:</label><select data-role="any" name="v1_h1"></select></div>
-                <div class="form-row"><label>Hasič 2:</label><select data-role="any" name="v1_h2"></select></div>
+                <div class="form-row"><label>Strojník (S):</label><select data-role="S" id="v1_s"></select></div>
+                <div class="form-row"><label>Velitel (V):</label><select data-role="V" id="v1_v"></select></div>
+                <div class="form-row"><label>Hasič 1:</label><select data-role="any" id="v1_h1"></select></div>
+                <div class="form-row"><label>Hasič 2:</label><select data-role="any" id="v1_h2"></select></div>
             </div>
             <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU</button>
         </form>
@@ -73,6 +82,27 @@
     </div>
 </div>
 
+<div id="edit-modal">
+    <div class="modal-content">
+        <h3 id="edit-name">Upravit člena</h3>
+        <input type="hidden" id="edit-id">
+        <div class="form-row"><label>Hodnost:</label>
+            <select id="edit-rank">
+                <option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option>
+                <option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option>
+                <option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option>
+            </select>
+        </div>
+        <div class="form-row"><label>Směny:</label><input type="number" id="edit-count"></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;" id="edit-courses-div">
+            <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
+            <label><input type="checkbox" value="KBJ"> KBJ</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="LI"> LI</label>
+        </div>
+        <button class="action-btn" onclick="saveEdit()">💾 Uložit změny</button>
+        <button class="action-btn" style="background: #555; margin-top: 5px;" onclick="closeEdit()">Zrušit</button>
+    </div>
+</div>
+
 <script>
     const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
     const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
@@ -91,7 +121,6 @@
     function renderTable() {
         const tbody = document.querySelector('#members-table tbody');
         const sorted = [...members].sort((a,b) => b.shift_count - a.shift_count);
-        
         tbody.innerHTML = sorted.map(m => `
             <tr>
                 <td>${m.rank}</td>
@@ -99,56 +128,57 @@
                 <td>${(m.courses || []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
                 <td><strong>${m.shift_count}</strong></td>
                 <td>
-                    <button class="small-btn" onclick="window.editMember('${m.id}')">✏️ Upravit</button>
-                    <button class="small-btn" onclick="window.deleteMember('${m.id}')">🗑️ Smazat</button>
+                    <button class="small-btn" onclick="window.openEdit('${m.id}')">✏️</button>
+                    <button class="small-btn" onclick="window.deleteMember('${m.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
     }
 
-    // GLOBÁLNÍ FUNKCE PŘES WINDOW (aby byly vidět vždy)
-    window.deleteMember = async (id) => {
-        if(!confirm("Opravdu smazat?")) return;
-        const { error } = await _db.from('members').delete().eq('id', id);
-        if(error) alert("Chyba: " + error.message);
-        await loadData();
-    };
-
-window.editMember = async (id) => {
+    // OTEVŘENÍ EDITORU
+    window.openEdit = (id) => {
         const m = members.find(x => String(x.id) === String(id));
         if(!m) return;
+        document.getElementById('edit-id').value = m.id;
+        document.getElementById('edit-name').innerText = `Upravit: ${m.first_name} ${m.last_name}`;
+        document.getElementById('edit-rank').value = m.rank;
+        document.getElementById('edit-count').value = m.shift_count;
+        
+        // Zaškrtnutí kurzů
+        document.querySelectorAll('#edit-courses-div input').forEach(ch => {
+            ch.checked = m.courses && m.courses.includes(ch.value);
+        });
+        
+        document.getElementById('edit-modal').style.display = 'flex';
+    };
 
-        // 1. Změna hodnosti
-        const newRank = prompt(`Nová hodnost pro ${m.last_name} (aktuálně: ${m.rank}):`, m.rank);
-        if (newRank === null) return;
+    window.closeEdit = () => { document.getElementById('edit-modal').style.display = 'none'; };
 
-        // 2. Změna směn
-        const newCount = prompt(`Počet směn:`, m.shift_count);
-        if (newCount === null) return;
+    // ULOŽENÍ EDITORU
+    window.saveEdit = async () => {
+        const id = document.getElementById('edit-id').value;
+        const rank = document.getElementById('edit-rank').value;
+        const count = document.getElementById('edit-count').value;
+        const courses = Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(c => c.value);
 
-        // 3. Změna kurzů
-        const currentCourses = (m.courses || []).join(', ');
-        const newCoursesStr = prompt(`Uprav kurzy (odděluj čárkou, např: V, S, Z):`, currentCourses);
-        if (newCoursesStr === null) return;
-
-        // Převod textu na pole a vyčištění mezer
-        const newCoursesArray = newCoursesStr.split(',')
-            .map(c => c.trim().toUpperCase())
-            .filter(c => c !== "");
-
-        // Odeslání do databáze
-        const { error } = await _db.from('members').update({ 
-            rank: newRank,
-            shift_count: parseInt(newCount) || 0,
-            courses: newCoursesArray
+        const { error } = await _db.from('members').update({
+            rank: rank,
+            shift_count: parseInt(count) || 0,
+            courses: courses
         }).eq('id', id);
 
-        if(error) {
-            alert("Chyba při ukládání: " + error.message);
-        } else {
-            alert("Údaje člena byly upraveny.");
+        if(error) alert(error.message);
+        else {
+            closeEdit();
             await loadData();
         }
+    };
+
+    // OSTATNÍ FUNKCE ZŮSTÁVAJÍ STEJNÉ
+    window.deleteMember = async (id) => {
+        if(!confirm("Opravdu smazat?")) return;
+        await _db.from('members').delete().eq('id', id);
+        await loadData();
     };
 
     function renderSelects() {
@@ -165,10 +195,13 @@ window.editMember = async (id) => {
     }
 
     async function submitShift() {
-        const selects = document.querySelectorAll('#shiftForm select');
-        const ids = [...new Set(Array.from(selects).map(s => s.value))].filter(v => v);
-        if(ids.length === 0) return alert("Nikdo není vybrán!");
-
+        const ids = [...new Set([
+            document.getElementById('v1_s').value,
+            document.getElementById('v1_v').value,
+            document.getElementById('v1_h1').value,
+            document.getElementById('v1_h2').value
+        ])].filter(v => v);
+        if(!ids.length) return alert("Vyberte hasiče!");
         const date = new Date().toISOString().split('T')[0];
         for(let id of ids) {
             const m = members.find(x => x.id == id);
@@ -183,7 +216,7 @@ window.editMember = async (id) => {
         const ln = document.getElementById('reg-lname').value;
         const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c => c.value);
         await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
-        alert("Hotovo!");
+        alert("Registrován!");
         await loadData();
     }
 
@@ -192,7 +225,7 @@ window.editMember = async (id) => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
-        loadData(); // Obnovení dat při přepnutí
+        loadData();
     }
 
     document.getElementById('date-display').innerText = "Dnešní datum: " + new Date().toLocaleDateString('cs-CZ');
