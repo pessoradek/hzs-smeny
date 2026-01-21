@@ -122,35 +122,36 @@
         });
     }
 
-    async function submitShift() {
-        const ids = [...new Set(Array.from(document.querySelectorAll('#shiftForm select')).map(s => s.value))].filter(v => v);
-        if(!ids.length) return alert('Nikdo není vybrán!');
-        
-        // OPRAVENO: ISO formát pro DB (YYYY-MM-DD)
-        const databaseDate = new Date().toISOString().split('T')[0];
-        const status = document.getElementById('shift-status');
-        
-        status.innerText = "Zapisuji...";
-        status.style.display = "block";
-        status.style.background = "#555";
+async function submitShift() {
+    const ids = [...new Set(Array.from(document.querySelectorAll('#shiftForm select')).map(s => s.value))].filter(v => v);
+    if(!ids.length) return alert('Nikdo není vybrán!');
+    
+    // TENTO ŘÁDEK JE KLÍČOVÝ - vytvoří formát "2026-01-21"
+    const databaseDate = new Date().toISOString().split('T')[0];
+    
+    const status = document.getElementById('shift-status');
+    status.innerText = "Zapisuji...";
+    status.style.display = "block";
 
-        for(let id of ids) {
-            const m = members.find(x => x.id == id);
-            const { error } = await _db.from('members').update({ 
-                shift_count: (m.shift_count || 0) + 1, 
-                last_shift: databaseDate 
-            }).eq('id', id);
-            
-            if (error) {
-                status.innerText = "CHYBA: " + error.message;
-                status.style.background = "red";
-                return;
-            }
+    for(let id of ids) {
+        const m = members.find(x => x.id == id);
+        // Tady posíláme 'databaseDate', ne tu českou verzi s tečkami
+        const { error } = await _db.from('members').update({ 
+            shift_count: (m.shift_count || 0) + 1, 
+            last_shift: databaseDate 
+        }).eq('id', id);
+        
+        if (error) {
+            console.error(error);
+            status.innerText = "CHYBA: " + error.message;
+            status.style.background = "red";
+            return;
         }
-        status.innerText = "ZAPSÁNO DO DATABÁZE!";
-        status.style.background = "green";
-        await loadData();
     }
+    status.innerText = "ZAPSÁNO DO DATABÁZE!";
+    status.style.background = "green";
+    await loadData(); // Načte čerstvá data a přepíše tabulku
+}
 
     async function registerMember() {
         const fn = document.getElementById('reg-fname').value;
