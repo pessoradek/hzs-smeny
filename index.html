@@ -3,36 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HZS Směnovnice</title>
+    <title>HZS Směnovnice - Kompletní Výjezd</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #1a1a1a; --text: #e0e0e0; --accent: #e63946; --panel: #2d2d2d; --border: #444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .tabs { margin-bottom: 20px; display: flex; gap: 5px; }
+        .tabs { margin-bottom: 20px; display: flex; gap: 5px; position: sticky; top: 0; z-index: 100; background: var(--bg); padding-bottom: 10px; }
         .tab-btn { background: var(--panel); border: 1px solid var(--border); color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
         .tab-btn.active { background: var(--accent); font-weight: bold; }
         .section { display: none; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
         .section.active { display: block; }
-        .vehicle-card { background: #333; border: 1px solid var(--border); margin-bottom: 15px; padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); }
-        .form-row { display: flex; align-items: center; margin-bottom: 10px; }
-        .form-row label { width: 160px; font-weight: bold; }
-        select, input { flex: 1; padding: 8px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; }
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; }
+        .vehicle-card { background: #333; border: 1px solid var(--border); padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); height: fit-content; }
+        .vehicle-card h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 1.1em; }
+        .form-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .form-row label { width: 140px; font-weight: bold; font-size: 0.9em; }
+        select, input { flex: 1; padding: 6px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
         .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 15px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; font-size: 1.1em; margin-top: 20px; }
         .small-btn { background: #555; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer; }
         
-        /* STYL PRO EDITAČNÍ OKNO */
-        #edit-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: var(--panel); padding: 30px; border-radius: 8px; width: 90%; max-width: 500px;
-            border: 1px solid var(--accent);
-        }
+        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--panel); padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
@@ -49,14 +44,68 @@
     <div id="rozkaz" class="section active">
         <h2 id="date-display"></h2>
         <form id="shiftForm">
-            <div class="vehicle-card">
-                <strong>První výjezd (Scania)</strong>
-                <div class="form-row"><label>Strojník (S):</label><select data-role="S" id="v1_s"></select></div>
-                <div class="form-row"><label>Velitel (V):</label><select data-role="V" id="v1_v"></select></div>
-                <div class="form-row"><label>Hasič 1:</label><select data-role="any" id="v1_h1"></select></div>
-                <div class="form-row"><label>Hasič 2:</label><select data-role="any" id="v1_h2"></select></div>
+            <div class="grid-layout">
+                <div class="vehicle-card">
+                    <h3>První výjezd (Scania)</h3>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Velitel (V):</label><select data-role="V"></select></div>
+                    <div class="form-row"><label>Hasič 1:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Hasič 2:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>Druhý výjezd (PSA 117 MAN)</h3>
+                    <div class="form-row"><label>Velitel (V):</label><select data-role="V"></select></div>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Hasič 1:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Hasič 2:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Hasič 3:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Hasič 4:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>CAS 30 (PSA 102)</h3>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>AZ 30 (PSA 103 Scania)</h3>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>RZA (PSA 106 VW Transporter)</h3>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Velitel/Hasič:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>VPP (PSA 465 - Kodiaq II.)</h3>
+                    <div class="form-row"><label>Vyšetřovatel 1:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Vyšetřovatel 2:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>Sanita (PSA 118 - VW Crafter FR)</h3>
+                    <div class="form-row"><label>Řidič/Zdravotník:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>Zdravotník:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>Ostatní technika</h3>
+                    <div class="form-row"><label>Strojník (S):</label><select data-role="S"></select></div>
+                    <div class="form-row"><label>Hasič/Velitel:</label><select data-role="any"></select></div>
+                </div>
+
+                <div class="vehicle-card">
+                    <h3>KOPIS</h3>
+                    <div class="form-row"><label>OD JPO:</label><select data-role="any"></select></div>
+                    <div class="form-row"><label>OD TL:</label><select data-role="any"></select></div>
+                </div>
             </div>
-            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU</button>
+            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU PRO VŠECHNY VYBRANÉ</button>
         </form>
     </div>
 
@@ -86,13 +135,7 @@
     <div class="modal-content">
         <h3 id="edit-name">Upravit člena</h3>
         <input type="hidden" id="edit-id">
-        <div class="form-row"><label>Hodnost:</label>
-            <select id="edit-rank">
-                <option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option>
-                <option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option>
-                <option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option>
-            </select>
-        </div>
+        <div class="form-row"><label>Hodnost:</label><select id="edit-rank"><option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option><option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option><option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option></select></div>
         <div class="form-row"><label>Směny:</label><input type="number" id="edit-count"></div>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;" id="edit-courses-div">
             <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
@@ -135,7 +178,6 @@
         `).join('');
     }
 
-    // OTEVŘENÍ EDITORU
     window.openEdit = (id) => {
         const m = members.find(x => String(x.id) === String(id));
         if(!m) return;
@@ -143,40 +185,28 @@
         document.getElementById('edit-name').innerText = `Upravit: ${m.first_name} ${m.last_name}`;
         document.getElementById('edit-rank').value = m.rank;
         document.getElementById('edit-count').value = m.shift_count;
-        
-        // Zaškrtnutí kurzů
         document.querySelectorAll('#edit-courses-div input').forEach(ch => {
             ch.checked = m.courses && m.courses.includes(ch.value);
         });
-        
         document.getElementById('edit-modal').style.display = 'flex';
     };
 
     window.closeEdit = () => { document.getElementById('edit-modal').style.display = 'none'; };
 
-    // ULOŽENÍ EDITORU
     window.saveEdit = async () => {
         const id = document.getElementById('edit-id').value;
-        const rank = document.getElementById('edit-rank').value;
-        const count = document.getElementById('edit-count').value;
         const courses = Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(c => c.value);
-
-        const { error } = await _db.from('members').update({
-            rank: rank,
-            shift_count: parseInt(count) || 0,
+        await _db.from('members').update({
+            rank: document.getElementById('edit-rank').value,
+            shift_count: parseInt(document.getElementById('edit-count').value) || 0,
             courses: courses
         }).eq('id', id);
-
-        if(error) alert(error.message);
-        else {
-            closeEdit();
-            await loadData();
-        }
+        closeEdit();
+        await loadData();
     };
 
-    // OSTATNÍ FUNKCE ZŮSTÁVAJÍ STEJNÉ
     window.deleteMember = async (id) => {
-        if(!confirm("Opravdu smazat?")) return;
+        if(!confirm("Smazat?")) return;
         await _db.from('members').delete().eq('id', id);
         await loadData();
     };
@@ -195,19 +225,19 @@
     }
 
     async function submitShift() {
-        const ids = [...new Set([
-            document.getElementById('v1_s').value,
-            document.getElementById('v1_v').value,
-            document.getElementById('v1_h1').value,
-            document.getElementById('v1_h2').value
-        ])].filter(v => v);
-        if(!ids.length) return alert("Vyberte hasiče!");
+        const selects = document.querySelectorAll('#shiftForm select');
+        const ids = [...new Set(Array.from(selects).map(s => s.value))].filter(v => v);
+        if(!ids.length) return alert("Vyberte aspoň jednoho člena!");
+        
         const date = new Date().toISOString().split('T')[0];
         for(let id of ids) {
             const m = members.find(x => x.id == id);
-            await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', id);
+            await _db.from('members').update({ 
+                shift_count: (m.shift_count || 0) + 1, 
+                last_shift: date 
+            }).eq('id', id);
         }
-        alert("Zapsáno!");
+        alert("Směna zapsána všem vybraným!");
         await loadData();
     }
 
