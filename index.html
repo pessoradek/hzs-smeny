@@ -77,7 +77,16 @@
     <div id="databaze" class="section">
         <h2>Seznam příslušníků</h2>
         <table id="members-table">
-            <thead><tr><th>Hodnost</th><th>Jméno</th><th>Kurzy</th><th>Směny</th><th>Akce</th></tr></thead>
+            <thead>
+            <tr>
+            <th>Hodnost</th>
+            <th>Jméno</th>
+            <th>Kurzy</th>
+            <th>Směny</th>
+            <th>Poslední směna</th> <!-- nový sloupec -->
+            <th>Akce</th>
+            </tr>
+            </thead>
             <tbody></tbody>
         </table>
     </div>
@@ -158,6 +167,7 @@ function renderTable(){
             <td>${m.first_name} ${m.last_name}</td>
             <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
             <td>${m.shift_count||0}</td>
+            <td>${m.last_shift || '-'}</td> <!-- nový sloupec s poslední směnou -->
             <td>
                 <button class="small-btn" onclick="openEdit('${m.id}')">✏️</button>
                 <button class="small-btn" onclick="deleteMember('${m.id}')">❌</button>
