@@ -114,14 +114,41 @@
         await loadData();
     };
 
-    window.editMember = async (id) => {
+window.editMember = async (id) => {
         const m = members.find(x => String(x.id) === String(id));
         if(!m) return;
-        const newCount = prompt(`Nový počet směn pro ${m.last_name}:`, m.shift_count);
-        if(newCount === null) return;
-        const { error } = await _db.from('members').update({ shift_count: parseInt(newCount) }).eq('id', id);
-        if(error) alert("Chyba: " + error.message);
-        await loadData();
+
+        // 1. Změna hodnosti
+        const newRank = prompt(`Nová hodnost pro ${m.last_name} (aktuálně: ${m.rank}):`, m.rank);
+        if (newRank === null) return;
+
+        // 2. Změna směn
+        const newCount = prompt(`Počet směn:`, m.shift_count);
+        if (newCount === null) return;
+
+        // 3. Změna kurzů
+        const currentCourses = (m.courses || []).join(', ');
+        const newCoursesStr = prompt(`Uprav kurzy (odděluj čárkou, např: V, S, Z):`, currentCourses);
+        if (newCoursesStr === null) return;
+
+        // Převod textu na pole a vyčištění mezer
+        const newCoursesArray = newCoursesStr.split(',')
+            .map(c => c.trim().toUpperCase())
+            .filter(c => c !== "");
+
+        // Odeslání do databáze
+        const { error } = await _db.from('members').update({ 
+            rank: newRank,
+            shift_count: parseInt(newCount) || 0,
+            courses: newCoursesArray
+        }).eq('id', id);
+
+        if(error) {
+            alert("Chyba při ukládání: " + error.message);
+        } else {
+            alert("Údaje člena byly upraveny.");
+            await loadData();
+        }
     };
 
     function renderSelects() {
