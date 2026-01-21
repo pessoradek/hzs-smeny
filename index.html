@@ -22,8 +22,7 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
         .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
         .action-btn { background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; }
-        .status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; text-align: center; font-weight: bold; }
-        .small-btn { background: #555; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer; z-index: 10; position: relative; }
+        .small-btn { background: #555; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer; }
         .small-btn:hover { background: #777; }
     </style>
 </head>
@@ -49,7 +48,6 @@
                 <div class="form-row"><label>Hasič 2:</label><select data-role="any" name="v1_h2"></select></div>
             </div>
             <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU</button>
-            <div id="shift-status" class="status-msg"></div>
         </form>
     </div>
 
@@ -92,50 +90,39 @@
 
     function renderTable() {
         const tbody = document.querySelector('#members-table tbody');
-        tbody.innerHTML = ''; 
-        
-        // Seřazení podle směn (sestupně)
         const sorted = [...members].sort((a,b) => b.shift_count - a.shift_count);
-
-        sorted.forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+        
+        tbody.innerHTML = sorted.map(m => `
+            <tr>
                 <td>${m.rank}</td>
                 <td>${m.first_name} ${m.last_name}</td>
                 <td>${(m.courses || []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
                 <td><strong>${m.shift_count}</strong></td>
                 <td>
-                    <button class="small-btn edit-trigger" data-id="${m.id}">✏️ Upravit</button>
-                    <button class="small-btn delete-trigger" data-id="${m.id}">🗑️ Smazat</button>
+                    <button class="small-btn" onclick="window.editMember('${m.id}')">✏️ Upravit</button>
+                    <button class="small-btn" onclick="window.deleteMember('${m.id}')">🗑️ Smazat</button>
                 </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.querySelectorAll('.edit-trigger').forEach(btn => {
-            btn.onclick = () => editMember(btn.dataset.id);
-        });
-        document.querySelectorAll('.delete-trigger').forEach(btn => {
-            btn.onclick = () => deleteMember(btn.dataset.id);
-        });
+            </tr>
+        `).join('');
     }
 
-    async function deleteMember(id) {
+    // GLOBÁLNÍ FUNKCE PŘES WINDOW (aby byly vidět vždy)
+    window.deleteMember = async (id) => {
         if(!confirm("Opravdu smazat?")) return;
         const { error } = await _db.from('members').delete().eq('id', id);
         if(error) alert("Chyba: " + error.message);
         await loadData();
-    }
+    };
 
-    async function editMember(id) {
-        const m = members.find(x => x.id == id);
-        const newCount = prompt(`Zadej nový počet směn pro ${m.last_name}:`, m.shift_count);
+    window.editMember = async (id) => {
+        const m = members.find(x => String(x.id) === String(id));
+        if(!m) return;
+        const newCount = prompt(`Nový počet směn pro ${m.last_name}:`, m.shift_count);
         if(newCount === null) return;
-        
         const { error } = await _db.from('members').update({ shift_count: parseInt(newCount) }).eq('id', id);
         if(error) alert("Chyba: " + error.message);
         await loadData();
-    }
+    };
 
     function renderSelects() {
         document.querySelectorAll('select[data-role]').forEach(sel => {
@@ -158,10 +145,7 @@
         const date = new Date().toISOString().split('T')[0];
         for(let id of ids) {
             const m = members.find(x => x.id == id);
-            await _db.from('members').update({ 
-                shift_count: (m.shift_count || 0) + 1, 
-                last_shift: date 
-            }).eq('id', id);
+            await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', id);
         }
         alert("Zapsáno!");
         await loadData();
@@ -170,27 +154,10 @@
     async function registerMember() {
         const fn = document.getElementById('reg-fname').value;
         const ln = document.getElementById('reg-lname').value;
-        // OPRAVA: Načtení vybraných kurzů
         const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c => c.value);
-
-        const { error } = await _db.from('members').insert({
-            first_name: fn, 
-            last_name: ln, 
-            discord_name: document.getElementById('reg-discord').value,
-            rank: document.getElementById('reg-rank').value, 
-            courses: crs,
-            shift_count: 0
-        });
-
-        if(error) alert("Chyba: " + error.message);
-        else {
-            alert("Hotovo!");
-            // Vyčištění polí
-            document.getElementById('reg-fname').value = '';
-            document.getElementById('reg-lname').value = '';
-            document.querySelectorAll('#reg-courses input').forEach(c => c.checked = false);
-            await loadData();
-        }
+        await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
+        alert("Hotovo!");
+        await loadData();
     }
 
     function switchTab(event, id) {
@@ -198,8 +165,7 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
-        // OPRAVA: Načíst data při přepnutí tabu
-        loadData();
+        loadData(); // Obnovení dat při přepnutí
     }
 
     document.getElementById('date-display').innerText = "Dnešní datum: " + new Date().toLocaleDateString('cs-CZ');
