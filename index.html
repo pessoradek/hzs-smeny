@@ -147,7 +147,11 @@ async function loadData(){
 
 function renderTable(){
     const tbody = document.querySelector('#members-table tbody');
-    tbody.innerHTML = members.map(m=>`
+
+    // seřadíme členy podle hodnosti
+    const sortedMembers = [...members].sort((a, b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
+
+    tbody.innerHTML = sortedMembers.map(m=>`
         <tr>
             <td>${m.rank}</td>
             <td>${m.first_name} ${m.last_name}</td>
@@ -160,7 +164,7 @@ function renderTable(){
         </tr>
     `).join('');
 }
-
+    
 function renderSelects(){
     document.querySelectorAll('select[data-role]').forEach(sel=>{
         const role = sel.dataset.role;
@@ -189,14 +193,19 @@ async function registerMember(){
 }
 
 async function submitShift(){
-    // uloží jen vybrané selecty
-    const ids = [...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value).filter(v=>v))];
-    if(!ids.length) return alert("Nikdo není vybrán!");
+    // vezmeme všechny selecty, vyfiltrujeme jen vyplněné
+    const ids = [...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value).filter(v => v))];
+    if(ids.length === 0) return alert("Nikdo není vybrán!"); // alespoň jeden musí být
     const date = new Date().toLocaleDateString('cs-CZ');
     for(let id of ids){
-        const m = members.find(x=>String(x.id)===String(id));
-        await _db.from('members').update({ shift_count:(m.shift_count||0)+1, last_shift:date }).eq('id',id);
+        const m = members.find(x => String(x.id) === String(id));
+        if(m){
+            await _db.from('members')
+                .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
+                .eq('id', id);
+        }
     }
+
     alert("Směna zapsána!");
     loadData();
 }
