@@ -171,21 +171,37 @@ async function submitShift() {
         }
     }
 
-    async function deleteMember(id) {
-        if(confirm("Opravdu smazat?")) {
-            const { error } = await _db.from('members').delete().eq('id', id);
-            if(error) alert(error.message);
-            else await loadData();
+async function deleteMember(id) {
+        if (!confirm("Opravdu chcete tohoto člena trvale smazat?")) return;
+        
+        const { error } = await _db.from('members').delete().eq('id', id);
+        
+        if (error) {
+            alert("Chyba při mazání: " + error.message);
+        } else {
+            alert("Člen byl smazán.");
+            await loadData(); // Obnoví tabulku
         }
     }
 
     async function editMember(id) {
         const m = members.find(x => x.id == id);
-        const newShift = prompt("Počet směn:", m.shift_count);
-        if(newShift !== null) {
-            const { error } = await _db.from('members').update({ shift_count: parseInt(newShift) }).eq('id', id);
-            if(error) alert(error.message);
-            else await loadData();
+        if (!m) return;
+
+        // Zeptáme se na nový počet směn
+        const newShiftCount = prompt(`Upravit počet směn pro: ${m.first_name} ${m.last_name}`, m.shift_count);
+        
+        // Pokud uživatel klikne na Storno, nic neděláme
+        if (newShiftCount === null) return;
+
+        const { error } = await _db.from('members')
+            .update({ shift_count: parseInt(newShiftCount) || 0 })
+            .eq('id', id);
+
+        if (error) {
+            alert("Chyba při úpravě: " + error.message);
+        } else {
+            await loadData(); // Obnoví tabulku
         }
     }
 
