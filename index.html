@@ -134,8 +134,10 @@ async function loadData(){
 }
 
 function renderTable(){
+    console.log("Renderuji tabulku", members);
     const tbody=document.querySelector('#members-table tbody');
-    tbody.innerHTML = members.sort((a,b)=>b.shift_count-(a.shift_count||0)).map(m=>`
+
+    tbody.innerHTML = members.map(m=>`
         <tr>
             <td>${m.rank}</td>
             <td>${m.first_name} ${m.last_name}</td>
@@ -148,7 +150,6 @@ function renderTable(){
         </tr>
     `).join('');
 }
-
 
 function renderSelects(){
     document.querySelectorAll('select[data-role]').forEach(sel=>{
@@ -223,7 +224,6 @@ async function saveEdit(){
 
 async function deleteMember(id){
     if(!confirm("Opravdu chceš smazat tohoto člena?")) return;
-    
     const { error } = await _db.from('members').delete().eq('id', id);
     if(error){
         alert("Chyba mazání: " + error.message);
@@ -232,7 +232,6 @@ async function deleteMember(id){
     alert("Člen byl smazán!");
     loadData();
 }
-
 
 function closeEdit(){document.getElementById('edit-modal').style.display='none';}
 
