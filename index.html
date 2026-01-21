@@ -122,7 +122,7 @@ function init(){
     vehContainer.innerHTML = VEHICLES.map(v=>`
         <div class="vehicle-card">
             <h3>${v.name}</h3>
-            ${v.roles.map(r=>`<div class="form-row"><label>${r==='any'?'Hasič':r==='OD'?'Operační důstojník':r==='S'?'Strojník':'Velitel'}:</label><select data-role="${r}"></select></div>`).join('')}
+            ${v.roles.map(r => `<div class="form-row"><label>${r==='any'?'Hasič':r==='OD'?'Operační důstojník':r==='S'?'Strojník':'Velitel'}:</label><select data-role="${r}"></select></div>`).join('')}
         </div>
     `).join('');
     loadData();
