@@ -3,44 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
-        connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net;
-        style-src 'self' 'unsafe-inline';
-    ">
-
-    <title>HZS Směnovnice & Databáze</title>
+    <title>HZS Směnovnice - Finální verze</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #1a1a1a; --text: #e0e0e0; --accent: #e63946; --panel: #2d2d2d; --border: #444; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         .tabs { margin-bottom: 20px; display: flex; gap: 5px; }
         .tab-btn { background: var(--panel); border: 1px solid var(--border); color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
-        .tab-btn.active { background: var(--accent); border-color: var(--accent); font-weight: bold; }
+        .tab-btn.active { background: var(--accent); font-weight: bold; }
         .section { display: none; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
         .section.active { display: block; }
         .vehicle-card { background: #333; border: 1px solid var(--border); margin-bottom: 15px; padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); }
         .form-row { display: flex; align-items: center; margin-bottom: 10px; }
-        .form-row label { width: 160px; font-weight: bold; font-size: 0.9em; }
+        .form-row label { width: 160px; font-weight: bold; }
         select, input { flex: 1; padding: 8px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { color: var(--accent); text-transform: uppercase; font-size: 0.8em; }
-        .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; font-weight: bold; }
-        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin: 15px 0; background: #222; padding: 10px; border-radius: 5px; }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; margin-top: 10px; }
-        .status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; text-align: center; }
-        .small-btn { background: #555; color: white; border: none; padding: 4px 8px; margin: 2px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
-        .small-btn:hover { background: var(--accent); }
+        .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; }
+        .status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; text-align: center; font-weight: bold; }
+        .small-btn { background: #555; color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>👨‍🚒 HZS Směnovnice & Databáze</h1>
+    <h1>👨‍🚒 HZS Směnovnice</h1>
     
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab(event, 'rozkaz')">Denní rozkaz</button>
@@ -49,69 +38,39 @@
     </div>
 
     <div id="rozkaz" class="section active">
-        <h2 id="date-display">Načítání...</h2>
+        <h2 id="date-display"></h2>
         <form id="shiftForm">
             <div class="vehicle-card">
                 <strong>První výjezd (Scania)</strong>
-                <div class="form-row"><label>Strojník:</label><select data-role="S" name="v1_s"></select></div>
-                <div class="form-row"><label>Velitel:</label><select data-role="V" name="v1_v"></select></div>
+                <div class="form-row"><label>Strojník (S):</label><select data-role="S" name="v1_s"></select></div>
+                <div class="form-row"><label>Velitel (V):</label><select data-role="V" name="v1_v"></select></div>
                 <div class="form-row"><label>Hasič 1:</label><select data-role="any" name="v1_h1"></select></div>
                 <div class="form-row"><label>Hasič 2:</label><select data-role="any" name="v1_h2"></select></div>
             </div>
-            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU (+1 čárka)</button>
+            <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU (+1 ČÁRKA)</button>
             <div id="shift-status" class="status-msg"></div>
         </form>
     </div>
 
     <div id="registrace" class="section">
-        <h2>Registrace nového člena</h2>
+        <h2>Registrace člena</h2>
         <div class="form-row"><label>Jméno:</label><input type="text" id="reg-fname"></div>
         <div class="form-row"><label>Příjmení:</label><input type="text" id="reg-lname"></div>
         <div class="form-row"><label>Discord:</label><input type="text" id="reg-discord"></div>
-        <div class="form-row">
-            <label>Hodnost:</label>
-            <select id="reg-rank">
-                <option value="plk.">plk.</option><option value="pplk.">pplk.</option>
-                <option value="mjr.">mjr.</option><option value="kpt.">kpt.</option>
-                <option value="npor.">npor.</option><option value="por.">por.</option>
-                <option value="ppor.">ppor.</option><option value="nprap.">nprap.</option>
-                <option value="prap.">prap.</option><option value="pprap.">pprap.</option>
-                <option value="nstržm.">nstržm.</option><option value="stržm.">stržm.</option>
-                <option value="rtn.">rtn.</option>
-            </select>
+        <div class="form-row"><label>Hodnost:</label><select id="reg-rank"><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option><option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option><option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option></select></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;" id="reg-courses">
+            <label><input type="checkbox" value="V"> V</label> <label><input type="checkbox" value="S"> S</label> <label><input type="checkbox" value="Z"> Z</label>
+            <label><input type="checkbox" value="KBJ"> KBJ</label> <label><input type="checkbox" value="P"> P</label> <label><input type="checkbox" value="LI"> LI</label>
+            <label><input type="checkbox" value="D"> D</label> <label><input type="checkbox" value="L"> L</label> <label><input type="checkbox" value="CH"> CH</label>
         </div>
-        <p><strong>Kurzy:</strong></p>
-        <div class="courses-grid">
-            <label><input type="checkbox" value="V"> Velitel (V)</label>
-            <label><input type="checkbox" value="S"> Strojník (S)</label>
-            <label><input type="checkbox" value="Z"> Zdravotník (Z)</label>
-            <label><input type="checkbox" value="KBJ"> KBJ</label>
-            <label><input type="checkbox" value="P"> Potápěč (P)</label>
-            <label><input type="checkbox" value="LI"> Lezec (LI)</label>
-            <label><input type="checkbox" value="D"> Dron (D)</label>
-            <label><input type="checkbox" value="L"> Letec (L)</label>
-            <label><input type="checkbox" value="CH"> Chemik (CH)</label>
-            <label><input type="checkbox" value="ZPP"> ZPP</label>
-            <label><input type="checkbox" value="OD"> OD</label>
-        </div>
-        <button class="action-btn" onclick="registerMember()">➕ Registrovat člena</button>
+        <button class="action-btn" onclick="registerMember()">➕ Registrovat</button>
         <div id="reg-status" class="status-msg"></div>
     </div>
 
     <div id="databaze" class="section">
-        <h2>Seznam příslušníků</h2>
+        <h2>Databáze</h2>
         <table id="members-table">
-            <thead>
-                <tr>
-                    <th>Hodnost</th>
-                    <th>Jméno</th>
-                    <th>Discord</th>
-                    <th>Kurzy</th>
-                    <th>Směny</th>
-                    <th>Poslední</th>
-                    <th>Akce</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Hodnost</th><th>Jméno</th><th>Discord</th><th>Kurzy</th><th>Směny</th><th>Poslední</th><th>Akce</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
@@ -122,13 +81,12 @@
     const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
     const _db = window.supabase.createClient(sb_url, sb_key);
 
-    const rankPower = { 'plk.':13,'pplk.':12,'mjr.':11,'kpt.':10,'npor.':9,'por.':8,'ppor.':7,'nprap.':6,'prap.':5,'pprap.':4,'nstržm.':3,'stržm.':2,'rtn.':1 };
     let members = [];
 
     async function loadData() {
         const { data, error } = await _db.from('members').select('*');
         if (error) return console.error(error);
-        members = data.sort((a,b) => (rankPower[b.rank] || 0) - (rankPower[a.rank] || 0));
+        members = data || [];
         renderTable();
         renderSelects();
     }
@@ -137,15 +95,15 @@
         const tbody = document.querySelector('#members-table tbody');
         tbody.innerHTML = members.map(m => `
             <tr>
-                <td><strong>${m.rank}</strong></td>
+                <td>${m.rank}</td>
                 <td>${m.first_name} ${m.last_name}</td>
-                <td><small>${m.discord_name || '-'}</small></td>
-                <td>${(Array.isArray(m.courses) ? m.courses : []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
-                <td style="font-weight:bold;">${m.shift_count || 0}</td>
+                <td>${m.discord_name || '-'}</td>
+                <td>${(m.courses || []).map(c => `<span class="course-tag">${c}</span>`).join('')}</td>
+                <td><strong>${m.shift_count}</strong></td>
                 <td><small>${m.last_shift || '-'}</small></td>
                 <td>
-                    <button class="small-btn" onclick="editMember(${m.id})">✏️ Editovat</button>
-                    <button class="small-btn" onclick="deleteMember(${m.id})">🗑️ Smazat</button>
+                    <button class="small-btn" onclick="editMember(${m.id})">✏️</button>
+                    <button class="small-btn" onclick="deleteMember(${m.id})">🗑️</button>
                 </td>
             </tr>
         `).join('');
@@ -156,7 +114,7 @@
             const role = sel.dataset.role;
             let h = '<option value="">-- vybrat --</option>';
             members.forEach(m => {
-                if (role === 'any' || (Array.isArray(m.courses) && m.courses.includes(role))) {
+                if (role === 'any' || (m.courses && m.courses.includes(role))) {
                     h += `<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
                 }
             });
@@ -164,107 +122,70 @@
         });
     }
 
+    async function submitShift() {
+        const ids = [...new Set(Array.from(document.querySelectorAll('#shiftForm select')).map(s => s.value))].filter(v => v);
+        if(!ids.length) return alert('Nikdo není vybrán!');
+        
+        const date = new Date().toLocaleDateString('cs-CZ');
+        const status = document.getElementById('shift-status');
+        
+        for(let id of ids) {
+            const m = members.find(x => x.id == id);
+            const { error } = await _db.from('members').update({ 
+                shift_count: (m.shift_count || 0) + 1, 
+                last_shift: date 
+            }).eq('id', id);
+            
+            if (error) {
+                status.innerText = "CHYBA: " + error.message;
+                status.style.background = "red";
+                status.style.display = "block";
+                return;
+            }
+        }
+        status.innerText = "ZAPSÁNO DO DATABÁZE!";
+        status.style.background = "green";
+        status.style.display = "block";
+        loadData();
+    }
+
+    async function registerMember() {
+        const fn = document.getElementById('reg-fname').value;
+        const ln = document.getElementById('reg-lname').value;
+        const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c => c.value);
+        
+        const { error } = await _db.from('members').insert({
+            first_name: fn, last_name: ln, discord_name: document.getElementById('reg-discord').value,
+            rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0
+        });
+
+        if(error) alert(error.message);
+        else { alert("Registrován!"); loadData(); }
+    }
+
+    async function deleteMember(id) {
+        if(confirm("Smazat?")) {
+            const { error } = await _db.from('members').delete().eq('id', id);
+            if(error) alert(error.message);
+            else loadData();
+        }
+    }
+
+    async function editMember(id) {
+        const m = members.find(x => x.id == id);
+        const newShift = prompt("Počet směn:", m.shift_count);
+        if(newShift !== null) {
+            const { error } = await _db.from('members').update({ shift_count: parseInt(newShift) }).eq('id', id);
+            if(error) alert(error.message);
+            else loadData();
+        }
+    }
+
     function switchTab(event, id) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
-        if (id !== 'registrace') loadData();
-    }
-
-    async function registerMember() {
-        const fn = document.getElementById('reg-fname').value.trim();
-        const ln = document.getElementById('reg-lname').value.trim();
-        if(!fn || !ln) return alert('Doplňte jméno!');
-        const courses = Array.from(document.querySelectorAll('.courses-grid input:checked')).map(c => c.value);
-        
-        const { error } = await _db.from('members').insert({
-            first_name: fn,
-            last_name: ln,
-            discord_name: document.getElementById('reg-discord').value.trim(),
-            rank: document.getElementById('reg-rank').value,
-            courses: courses,
-            shift_count: 0
-        });
-
-        const status = document.getElementById('reg-status');
-        status.style.display = 'block';
-        if(error) { 
-            status.innerText = "Chyba: " + error.message; 
-            status.style.background = "red"; 
-        } else { 
-            status.innerText = "Registrace OK!"; 
-            status.style.background = "green";
-            document.querySelectorAll('#registrace input[type=text]').forEach(i => i.value = '');
-            document.querySelectorAll('.courses-grid input').forEach(c => c.checked = false);
-            await loadData();
-        }
-    }
-
-    async function submitShift() {
-        const selects = document.querySelectorAll('#shiftForm select');
-        const ids = [...new Set(Array.from(selects).map(s => s.value))].filter(v => v !== "");
-        
-        if(ids.length === 0) return alert('Nikdo není vybrán!');
-        
-        const date = new Date().toLocaleDateString('cs-CZ');
-        const status = document.getElementById('shift-status');
-        status.innerText = "Zapisuji do databáze...";
-        status.style.background = "#555";
-        status.style.display = "block";
-
-        try {
-            for(let id of ids) {
-                const m = members.find(x => x.id == id);
-                if (m) {
-                    const { error } = await _db.from('members')
-                        .update({ 
-                            shift_count: (parseInt(m.shift_count) || 0) + 1, 
-                            last_shift: date 
-                        })
-                        .eq('id', id);
-                    if (error) throw error;
-                }
-            }
-            status.innerText = "Směna úspěšně zapsána!";
-            status.style.background = "green";
-            await loadData();
-        } catch (err) {
-            alert("Chyba při zápisu: " + err.message);
-            status.style.background = "red";
-        }
-    }
-
-    async function deleteMember(id) {
-        if(!confirm("Opravdu chcete smazat tohoto člena?")) return;
-        const { error } = await _db.from('members').delete().eq('id', id);
-        if(error) return alert("Chyba při mazání: " + error.message);
-        await loadData();
-    }
-
-    async function editMember(id) {
-        const m = members.find(x => x.id == id);
-        if(!m) return alert("Člen nenalezen!");
-        
-        const newFirst = prompt("Jméno:", m.first_name);
-        if (newFirst === null) return;
-        const newLast = prompt("Příjmení:", m.last_name);
-        const newRank = prompt("Hodnost:", m.rank);
-        const newDiscord = prompt("Discord:", m.discord_name || '');
-        const newShifts = prompt("Počet směn:", m.shift_count || 0);
-        const newCoursesRaw = prompt("Kurzy (oddělené čárkou, např: V,S,Z):", (Array.isArray(m.courses) ? m.courses.join(',') : ''));
-        
-        const { error } = await _db.from('members').update({
-            first_name: newFirst,
-            last_name: newLast,
-            rank: newRank,
-            discord_name: newDiscord,
-            shift_count: parseInt(newShifts) || 0,
-            courses: newCoursesRaw ? newCoursesRaw.split(',').map(c => c.trim()).filter(c => c) : []
-        }).eq('id', id);
-        
-        if(error) alert("Chyba při úpravě: " + error.message);
-        await loadData();
     }
 
     document.getElementById('date-display').innerText = "Dnešní datum: " + new Date().toLocaleDateString('cs-CZ');
