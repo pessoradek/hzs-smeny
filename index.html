@@ -141,10 +141,14 @@ function renderTable(){
             <td>${m.first_name} ${m.last_name}</td>
             <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
             <td>${m.shift_count||0}</td>
-            <td><button class="small-btn" onclick="openEdit('${m.id}')">✏️</button></td>
+            <td>
+                <button class="small-btn" onclick="openEdit('${m.id}')">✏️</button>
+                <button class="small-btn" onclick="deleteMember('${m.id}')">❌</button>
+            </td>
         </tr>
     `).join('');
 }
+
 
 function renderSelects(){
     document.querySelectorAll('select[data-role]').forEach(sel=>{
