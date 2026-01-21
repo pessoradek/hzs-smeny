@@ -6,46 +6,44 @@
     <title>HZS Směnovnice</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg: #1a1a1a; --text: #e0e0e0; --accent: #e63946; --panel: #2d2d2d; --border: #444; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .tabs { margin-bottom: 20px; display: flex; gap: 5px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 100; }
-        .tab-btn { background: var(--panel); border: 1px solid var(--border); color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border); }
-        .tab-btn.active { background: var(--accent); font-weight: bold; }
-        .section { display: none; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-        .section.active { display: block; }
-        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .vehicle-card { background: #333; border: 1px solid var(--border); padding: 15px; border-radius: 5px; border-left: 5px solid var(--accent); }
-        .vehicle-card h3 { margin: 0 0 10px 0; color: var(--accent); font-size: 1.1em; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        .form-row { display: flex; align-items: center; margin-bottom: 8px; }
-        .form-row label { width: 120px; font-size: 0.85em; font-weight: bold; }
-        select, input { flex: 1; padding: 6px; background: #222; border: 1px solid #555; color: white; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        .course-tag { display: inline-block; background: var(--accent); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin: 2px; }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 15px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; margin-top: 20px; }
-        .small-btn { background: #555; color: white; border: none; padding: 5px 8px; margin: 2px; border-radius: 4px; cursor: pointer; }
-        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin: 10px 0; background: #222; padding: 10px; border-radius: 4px; }
-        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--panel); padding: 20px; border-radius: 8px; width: 90%; max-width: 450px; border: 1px solid var(--accent); }
+        :root { --bg:#1a1a1a; --text:#e0e0e0; --accent:#e63946; --panel:#2d2d2d; --border:#444; }
+        body { font-family:'Segoe UI', sans-serif; background:var(--bg); color:var(--text); padding:20px; margin:0; }
+        .container { max-width:1400px; margin:0 auto; }
+        .tabs { display:flex; gap:5px; margin-bottom:20px; }
+        .tab-btn { background:var(--panel); border:1px solid var(--border); color:white; padding:10px 20px; cursor:pointer; border-radius:4px; }
+        .tab-btn.active { background:var(--accent); font-weight:bold; }
+        .section { display:none; background:var(--panel); padding:20px; border-radius:8px; border:1px solid var(--border); }
+        .section.active { display:block; }
+        .grid-layout { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:15px; }
+        .vehicle-card { background:#333; border:1px solid var(--border); padding:15px; border-radius:5px; border-left:5px solid var(--accent); }
+        .vehicle-card h3 { margin:0 0 10px 0; color:var(--accent); font-size:1.1em; border-bottom:1px solid #444; padding-bottom:5px; }
+        .form-row { display:flex; align-items:center; margin-bottom:8px; }
+        .form-row label { width:120px; font-size:0.85em; font-weight:bold; }
+        select,input { flex:1; padding:6px; background:#222; border:1px solid #555; color:white; border-radius:4px; }
+        table { width:100%; border-collapse:collapse; margin-top:20px; }
+        th,td { padding:12px; text-align:left; border-bottom:1px solid var(--border); }
+        .course-tag { display:inline-block; background:var(--accent); color:white; padding:2px 6px; border-radius:3px; font-size:0.7em; margin:2px; cursor:pointer; }
+        .action-btn { background:var(--accent); color:white; border:none; padding:15px; cursor:pointer; border-radius:4px; width:100%; font-weight:bold; margin-top:20px; }
+        .small-btn { background:#555; color:white; border:none; padding:5px 8px; margin:2px; border-radius:4px; cursor:pointer; }
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(60px,1fr)); gap:8px; margin:10px 0; background:#222; padding:10px; border-radius:4px; }
+        #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
+        .modal-content { background:var(--panel); padding:20px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>👨‍🚒 HZS Směnovnice (GitHub Live)</h1>
-    
+    <h1>👨‍🚒 HZS Směnovnice</h1>
+
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab(event, 'rozkaz')">Denní rozkaz</button>
-        <button class="tab-btn" onclick="switchTab(event, 'registrace')">Registrace</button>
-        <button class="tab-btn" onclick="switchTab(event, 'databaze')">Databáze</button>
+        <button class="tab-btn active" onclick="switchTab(event,'rozkaz')">Denní rozkaz</button>
+        <button class="tab-btn" onclick="switchTab(event,'registrace')">Registrace</button>
+        <button class="tab-btn" onclick="switchTab(event,'databaze')">Databáze</button>
     </div>
 
     <div id="rozkaz" class="section active">
         <h2 id="date-display"></h2>
         <form id="shiftForm">
-            <div class="grid-layout" id="vehicles-container">
-                </div>
+            <div class="grid-layout" id="vehicles-container"></div>
             <button type="button" class="action-btn" onclick="submitShift()">💾 ZAPSAT SMĚNU</button>
         </form>
     </div>
@@ -54,8 +52,20 @@
         <h2>Nový člen</h2>
         <div class="form-row"><label>Jméno:</label><input type="text" id="reg-fname"></div>
         <div class="form-row"><label>Příjmení:</label><input type="text" id="reg-lname"></div>
-        <div class="form-row"><label>Discord:</label><input type="text" id="reg-discord"></div>
-        <div class="form-row"><label>Hodnost:</label><select id="reg-rank"><option value="rtn.">rtn.</option><option value="stržm.">stržm.</option><option value="nstržm.">nstržm.</option><option value="pprap.">pprap.</option><option value="prap.">prap.</option><option value="nprap.">nprap.</option><option value="ppor.">ppor.</option><option value="por.">por.</option><option value="npor.">npor.</option><option value="kpt.">kpt.</option></select></div>
+        <div class="form-row"><label>Hodnost:</label>
+            <select id="reg-rank">
+                <option value="rtn.">rtn.</option>
+                <option value="stržm.">stržm.</option>
+                <option value="nstržm.">nstržm.</option>
+                <option value="pprap.">pprap.</option>
+                <option value="prap.">prap.</option>
+                <option value="nprap.">nprap.</option>
+                <option value="ppor.">ppor.</option>
+                <option value="por.">por.</option>
+                <option value="npor.">npor.</option>
+                <option value="kpt.">kpt.</option>
+            </select>
+        </div>
         <p>Kurzy:</p>
         <div class="course-grid" id="reg-courses"></div>
         <button class="action-btn" onclick="registerMember()">➕ Registrovat</button>
@@ -76,6 +86,7 @@
         <input type="hidden" id="edit-id">
         <div class="form-row"><label>Hodnost:</label><select id="edit-rank"></select></div>
         <div class="form-row"><label>Směny:</label><input type="number" id="edit-count"></div>
+        <p>Kurzy:</p>
         <div class="course-grid" id="edit-courses-div"></div>
         <button class="action-btn" onclick="saveEdit()">💾 Uložit</button>
         <button class="action-btn" style="background:#555" onclick="closeEdit()">Zavřít</button>
@@ -83,104 +94,133 @@
 </div>
 
 <script>
-    const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-    const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
-    const _db = window.supabase.createClient(sb_url, sb_key);
+const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const _db = supabase.createClient(sb_url, sb_key);
 
-    const ALL_COURSES = ['V', 'S', 'Z', 'KBJ', 'P', 'LI', 'D', 'L', 'CH', 'ZPP', 'OD'];
-    const VEHICLES = [
-        { name: 'První výjezd (Scania)', roles: ['S', 'V', 'any', 'any'] },
-        { name: 'Druhý výjezd (MAN)', roles: ['V', 'S', 'any', 'any', 'any', 'any'] },
-        { name: 'CAS 30 (PSA 102)', roles: ['S', 'any'] },
-        { name: 'AZ 30 (Scania)', roles: ['S', 'any'] },
-        { name: 'RZA (VW)', roles: ['S', 'any'] },
-        { name: 'VPP (Kodiaq)', roles: ['any', 'any'] },
-        { name: 'Sanita (Crafter)', roles: ['any', 'any'] },
-        { name: 'KOPIS', roles: ['any', 'any'] },
-        { name: 'Ostatní technika', roles: ['S', 'any'] }
-    ];
+const ALL_COURSES=['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD'];
+const VEHICLES=[
+    {name:'První výjezd (Scania)',roles:['S','V','any','any']},
+    {name:'Druhý výjezd (MAN)',roles:['V','S','any','any','any','any']},
+    {name:'CAS 30 (PSA 102)',roles:['S','any']},
+    {name:'AZ 30 (Scania)',roles:['S','any']},
+    {name:'RZA (VW)',roles:['S','any']},
+    {name:'VPP (Kodiaq)',roles:['any','any']},
+    {name:'Sanita (Crafter)',roles:['any','any']},
+    {name:'KOPIS',roles:['any','any']},
+    {name:'Ostatní technika',roles:['S','any']}
+];
 
-    let members = [];
+let members=[];
 
-    // Inicializace
-    function init() {
-        const grid = document.getElementById('reg-courses');
-        grid.innerHTML = ALL_COURSES.map(c => `<label><input type="checkbox" value="${c}"> ${c}</label>`).join('');
-        
-        const vehContainer = document.getElementById('vehicles-container');
-        vehContainer.innerHTML = VEHICLES.map(v => `
-            <div class="vehicle-card">
-                <h3>${v.name}</h3>
-                ${v.roles.map(r => `<div class="form-row"><label>${r==='any'?'Hasič':r==='S'?'Strojník':'Velitel'}:</label><select data-role="${r}"></select></div>`).join('')}
-            </div>
-        `).join('');
-        
-        loadData();
-    }
+function init(){
+    document.getElementById('reg-courses').innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}">${c}</label>`).join('');
+    const vehContainer=document.getElementById('vehicles-container');
+    vehContainer.innerHTML = VEHICLES.map(v=>`
+        <div class="vehicle-card">
+            <h3>${v.name}</h3>
+            ${v.roles.map(r=>`<div class="form-row"><label>${r==='any'?'Hasič':r==='S'?'Strojník':'Velitel'}:</label><select data-role="${r}"></select></div>`).join('')}
+        </div>
+    `).join('');
+    loadData();
+}
 
-    async function loadData() {
-        const { data } = await _db.from('members').select('*');
-        members = data || [];
-        renderTable();
-        renderSelects();
-    }
+async function loadData(){
+    const { data,error } = await _db.from('members').select('*');
+    if(error) return alert("Chyba načtení: "+error.message);
+    members=data||[];
+    renderTable();
+    renderSelects();
+}
 
-    function renderTable() {
-        const tbody = document.querySelector('#members-table tbody');
-        tbody.innerHTML = members.sort((a,b)=>b.shift_count - a.shift_count).map(m => `
-            <tr>
-                <td>${m.rank}</td>
-                <td>${m.first_name} ${m.last_name}</td>
-                <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
-                <td>${m.shift_count}</td>
-                <td><button class="small-btn" onclick="openEdit('${m.id}')">✏️</button></td>
-            </tr>
-        `).join('');
-    }
+function renderTable(){
+    const tbody=document.querySelector('#members-table tbody');
+    tbody.innerHTML = members.sort((a,b)=>b.shift_count-(a.shift_count||0)).map(m=>`
+        <tr>
+            <td>${m.rank}</td>
+            <td>${m.first_name} ${m.last_name}</td>
+            <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
+            <td>${m.shift_count||0}</td>
+            <td><button class="small-btn" onclick="openEdit('${m.id}')">✏️</button></td>
+        </tr>
+    `).join('');
+}
 
-    function renderSelects() {
-        document.querySelectorAll('select[data-role]').forEach(sel => {
-            const role = sel.dataset.role;
-            let h = '<option value="">-- vybrat --</option>';
-            members.forEach(m => {
-                if(role==='any' || (m.courses && m.courses.includes(role))) {
-                    h += `<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
-                }
-            });
-            sel.innerHTML = h;
+function renderSelects(){
+    document.querySelectorAll('select[data-role]').forEach(sel=>{
+        const role=sel.dataset.role;
+        let h='<option value="">-- vybrat --</option>';
+        members.forEach(m=>{
+            if(role==='any'||(m.courses && m.courses.includes(role))){
+                h+=`<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
+            }
         });
+        sel.innerHTML=h;
+    });
+}
+
+async function registerMember(){
+    const fn=document.getElementById('reg-fname').value.trim();
+    const ln=document.getElementById('reg-lname').value.trim();
+    const crs=Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
+    if(!fn||!ln) return alert("Chybí jméno!");
+    const { error } = await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
+    if(error) return alert("Chyba: "+error.message);
+    alert("Člen úspěšně registrován!");
+    document.getElementById('reg-fname').value='';
+    document.getElementById('reg-lname').value='';
+    document.querySelectorAll('#reg-courses input').forEach(i=>i.checked=false);
+    loadData();
+}
+
+async function submitShift(){
+    const ids=[...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value))].filter(v=>v);
+    if(!ids.length) return alert("Nikdo není vybrán!");
+    const date=new Date().toLocaleDateString('cs-CZ');
+    for(let id of ids){
+        const m=members.find(x=>String(x.id)===String(id));
+        await _db.from('members').update({ shift_count:(m.shift_count||0)+1, last_shift:date }).eq('id',id);
     }
+    alert("Směna zapsána!");
+    loadData();
+}
 
-    window.registerMember = async () => {
-        const fn = document.getElementById('reg-fname').value;
-        const ln = document.getElementById('reg-lname').value;
-        const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
-        if(!fn || !ln) return alert("Chybí jméno!");
-        await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
-        alert("Hotovo!");
-        location.reload();
-    };
+function switchTab(e,id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    e.currentTarget.classList.add('active');
+}
 
-    window.submitShift = async () => {
-        const ids = [...new Set(Array.from(document.querySelectorAll('select')).map(s=>s.value))].filter(v=>v);
-        if(!ids.length) return alert("Nikdo není vybrán!");
-        for(let id of ids) {
-            const m = members.find(x => String(x.id) === String(id));
-            await _db.from('members').update({ shift_count: (m.shift_count||0)+1 }).eq('id', id);
-        }
-        alert("Zapsáno!");
-        loadData();
-    };
+function openEdit(id){
+    const m=members.find(x=>String(x.id)===String(id));
+    if(!m) return;
+    document.getElementById('edit-id').value=m.id;
+    document.getElementById('edit-name').innerText=`Upravit ${m.first_name} ${m.last_name}`;
+    document.getElementById('edit-count').value=m.shift_count||0;
+    const rankSelect=document.getElementById('edit-rank');
+    rankSelect.innerHTML=document.getElementById('reg-rank').innerHTML;
+    rankSelect.value=m.rank;
+    const div=document.getElementById('edit-courses-div');
+    div.innerHTML=ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}" ${m.courses&&m.courses.includes(c)?'checked':''}>${c}</label>`).join('');
+    document.getElementById('edit-modal').style.display='flex';
+}
 
-    window.switchTab = (e, id) => {
-        document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        e.currentTarget.classList.add('active');
-    };
+async function saveEdit(){
+    const id=document.getElementById('edit-id').value;
+    const rank=document.getElementById('edit-rank').value;
+    const count=parseInt(document.getElementById('edit-count').value)||0;
+    const courses=Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(i=>i.value);
+    const { error }=await _db.from('members').update({ rank, shift_count:count, courses }).eq('id',id);
+    if(error) return alert("Chyba: "+error.message);
+    closeEdit();
+    loadData();
+}
 
-    document.getElementById('date-display').innerText = new Date().toLocaleDateString('cs-CZ');
-    init();
+function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+
+document.getElementById('date-display').innerText=new Date().toLocaleDateString('cs-CZ');
+init();
 </script>
 </body>
 </html>
