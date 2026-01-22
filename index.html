@@ -45,7 +45,7 @@
         .course-grid input { display:none; }
         .course-grid input:checked + span { color:var(--accent); font-weight:bold; }
 
-        /* --- NOVÉ STYLY PRO VYHLEDÁVACÍ SELECT --- */
+        /* --- VYHLEDÁVACÍ SELECT (OPRAVENÝ) --- */
         .searchable-wrapper { position: relative; flex:1; }
         .search-input { width: 100%; box-sizing: border-box; cursor: text; }
         .suggestions-list {
@@ -53,21 +53,21 @@
             top: 100%;
             left: 0;
             width: 100%;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             background: #2a2a2a;
             border: 1px solid var(--accent);
             border-radius: 0 0 4px 4px;
-            z-index: 100;
-            display: none; /* Skryté, dokud se neklikne */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            z-index: 9999; /* Vyšší z-index */
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
         }
         .suggestions-list.show { display: block; }
         .suggestion-item {
             padding: 8px 12px;
             cursor: pointer;
             border-bottom: 1px solid #3d3d3d;
-            font-size: 0.9em;
+            font-size:0.9em;
             color: #ccc;
         }
         .suggestion-item:hover { background: var(--accent); color: white; }
@@ -75,7 +75,7 @@
         .suggestion-item:hover .rank-badge { color: white; }
 
         /* Modal */
-        #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
+        #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--panel); padding:25px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); }
         .modal-buttons { display:flex; gap:10px; margin-top:20px; }
     </style>
@@ -103,9 +103,7 @@
         <div class="form-row"><label>Jméno:</label><input type="text" id="reg-fname"></div>
         <div class="form-row"><label>Příjmení:</label><input type="text" id="reg-lname"></div>
         <div class="form-row"><label>Hodnost:</label>
-            <select id="reg-rank">
-                <!-- Naplněno JS -->
-            </select>
+            <select id="reg-rank"></select>
         </div>
         <p>Kurzy:</p>
         <div class="course-grid" id="reg-courses"></div>
@@ -161,13 +159,11 @@ const RANKS = ['plk.','pplk.','mjr.','kpt.','npor.','por.','ppor.','nprap.','pra
 let members = [];
 
 function init(){
-    // naplníme hodnosti do registrace
+    // Naplnění selectů
     document.getElementById('reg-rank').innerHTML = RANKS.map(r=>`<option value="${r}">${r}</option>`).join('');
-    
-    // kurzy v registraci
     document.getElementById('reg-courses').innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}"><span>${c}</span></label>`).join('');
     
-    // vozidla a role - Generování vlastního vyhledávacího inputu
+    // Generování vozidel
     const vehContainer = document.getElementById('vehicles-container');
     vehContainer.innerHTML = VEHICLES.map((v, vIndex) => `
         <div class="vehicle-card">
@@ -188,13 +184,12 @@ function init(){
         </div>
     `).join('');
     
-    // Navěsíme event listenery na všechna nová vyhledávací pole
     attachSearchListeners();
-    
     loadData();
 }
 
-// Přidání logiky pro vyhledávání
+// --- NOVÁ LOGIKA PRO VYHLEDÁVÁNÍ ---
+
 function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
@@ -203,52 +198,66 @@ function attachSearchListeners(){
         const list = document.getElementById(listId);
         const hiddenInput = document.getElementById('hidden-' + input.id.replace('input-', ''));
 
-        // 1. Při kliknutí (focus) zobrazit nabídku
+        // Focus: Otevřít seznam
         input.addEventListener('focus', () => {
             fillSuggestions(list, role, '');
             list.classList.add('show');
         });
 
-        // 2. Při psaní filtrovat
+        // Input: Filtrovat
         input.addEventListener('input', (e) => {
             fillSuggestions(list, role, e.target.value.toLowerCase());
             list.classList.add('show');
         });
 
-        // 3. Při kliknutí mimo (blur) skrýt (s malým zpožděním pro kliknutí na položku)
+        // Blur: Zavřít seznam (po malé pauze, aby stihl kliknutí)
         input.addEventListener('blur', () => {
-            setTimeout(() => list.classList.remove('show'), 200);
+            setTimeout(() => list.classList.remove('show'), 150);
         });
     });
 }
 
 function fillSuggestions(listElement, role, filterText){
-    // Filtrování členů podle role a psaného textu
+    listElement.innerHTML = ''; // Vyčistíme seznam
+    
+    // 1. Filtrování
     const filtered = members.filter(m => {
-        // Kontrola kurzu
         if(role !== 'any' && (!m.courses || !m.courses.includes(role))) return false;
-        
-        // Kontrola textu (jméno nebo hodnost)
         const fullText = `${m.rank} ${m.last_name} ${m.first_name}`.toLowerCase();
         return fullText.includes(filterText);
     });
 
-    // Seřazení podle hodnosti
+    // 2. Seřazení
     filtered.sort((a,b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
 
-    // Generování HTML
+    // 3. Generování položek BEZPEČNĚ (přes DOM, ne innerHTML string, kvůli apostrofům ve jménech)
     if(filtered.length === 0){
-        listElement.innerHTML = '<div class="suggestion-item" style="cursor:default; color:#888;">Nikdo nenalezen</div>';
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.style.cursor = 'default';
+        div.style.color = '#888';
+        div.textContent = 'Nikdo nenalezen';
+        listElement.appendChild(div);
     } else {
-        listElement.innerHTML = filtered.map(m => `
-            <div class="suggestion-item" onclick="selectMember('${m.id}', '${m.rank} ${m.last_name}', '${listElement.id.replace('list-','')}')">
-                <span class="rank-badge">${m.rank}</span> ${m.last_name} ${m.first_name}
-            </div>
-        `).join('');
+        filtered.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            
+            // HTML pro obsah (je bezpečné, protože texty jdou z databáze, ale nemusíme se bát breaknutí JS)
+            div.innerHTML = `<span class="rank-badge">${m.rank}</span> ${m.last_name} ${m.first_name}`;
+            
+            // Přidáme event listener přímo na element
+            // Používáme 'mousedown' místo 'click', protože se spustí dříve než 'blur' na inputu
+            div.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Zabrání ztrátě focusu před výběrem (volitelné)
+                selectMember(m.id, `${m.rank} ${m.last_name}`, listElement.id.replace('list-',''));
+            });
+            
+            listElement.appendChild(div);
+        });
     }
 }
 
-// Globální funkce pro výběr z dropdownu (volá se z onclick v HTML)
 window.selectMember = function(id, nameText, baseId) {
     const input = document.getElementById('input-' + baseId);
     const hidden = document.getElementById('hidden-' + baseId);
@@ -259,12 +268,13 @@ window.selectMember = function(id, nameText, baseId) {
     list.classList.remove('show');
 }
 
+// --- ZBYTEK APLIKACE ---
+
 async function loadData(){
     const { data, error } = await _db.from('members').select('*');
     if(error) return alert("Chyba načtení: "+error.message);
     members = data || [];
     renderTable();
-    // Selecty se generují dynamicky při focusu, takže zde nemusíme volat renderSelects
 }
 
 function renderTable(){
@@ -302,7 +312,6 @@ async function registerMember(){
 }
 
 async function submitShift(){
-    // Najdeme všechny hidden inputy, které mají UUID
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     const ids = [...new Set(Array.from(hiddenInputs)
         .map(input => input.value)
@@ -322,11 +331,8 @@ async function submitShift(){
         }
     }
     alert("Směna zapsána!");
-    
-    // Vyčistíme formulář po úspěchu
     document.querySelectorAll('.search-input').forEach(i => i.value = '');
     document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
-    
     loadData();
 }
 
