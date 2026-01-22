@@ -6,28 +6,78 @@
     <title>HZS Směnovnice</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg:#1a1a1a; --text:#e0e0e0; --accent:#e63946; --panel:#2d2d2d; --border:#444; }
+        :root { --bg:#1a1a1a; --text:#e0e0e0; --accent:#e63946; --panel:#2d2d2d; --border:#444; --input-bg:#222; }
         body { font-family:'Segoe UI', sans-serif; background:var(--bg); color:var(--text); padding:20px; margin:0; }
         .container { max-width:1400px; margin:0 auto; }
         .tabs { display:flex; gap:5px; margin-bottom:20px; }
-        .tab-btn { background:var(--panel); border:1px solid var(--border); color:white; padding:10px 20px; cursor:pointer; border-radius:4px; }
+        .tab-btn { background:var(--panel); border:1px solid var(--border); color:white; padding:10px 20px; cursor:pointer; border-radius:4px; transition:0.2s; }
+        .tab-btn:hover { background:#3d3d3d; }
         .tab-btn.active { background:var(--accent); font-weight:bold; }
         .section { display:none; background:var(--panel); padding:20px; border-radius:8px; border:1px solid var(--border); }
         .section.active { display:block; }
         .grid-layout { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:15px; }
-        .vehicle-card { background:#333; border:1px solid var(--border); padding:15px; border-radius:5px; border-left:5px solid var(--accent); }
-        .vehicle-card h3 { margin:0 0 10px 0; color:var(--accent); font-size:1.1em; border-bottom:1px solid #444; padding-bottom:5px; }
-        .form-row { display:flex; align-items:center; margin-bottom:8px; }
-        .form-row label { width:120px; font-size:0.85em; font-weight:bold; }
-        select,input { flex:1; padding:6px; background:#222; border:1px solid #555; color:white; border-radius:4px; }
+        .vehicle-card { background:#333; border:1px solid var(--border); padding:15px; border-radius:5px; border-left:5px solid var(--accent); position:relative; }
+        .vehicle-card h3 { margin:0 0 15px 0; color:var(--accent); font-size:1.1em; border-bottom:1px solid #444; padding-bottom:5px; }
+        
+        /* Formuláře a inputy */
+        .form-row { display:flex; align-items:center; margin-bottom:8px; position:relative; }
+        .form-row label { width:110px; font-size:0.85em; font-weight:bold; flex-shrink:0; }
+        select, input[type="text"], input[type="number"] { 
+            flex:1; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
+            font-size:0.95em;
+        }
+        select:focus, input:focus { outline:1px solid var(--accent); border-color:var(--accent); }
+
+        /* Tabulka */
         table { width:100%; border-collapse:collapse; margin-top:20px; }
         th,td { padding:12px; text-align:left; border-bottom:1px solid var(--border); }
-        .course-tag { display:inline-block; background:var(--accent); color:white; padding:2px 6px; border-radius:3px; font-size:0.7em; margin:2px; cursor:pointer; }
-        .action-btn { background:var(--accent); color:white; border:none; padding:15px; cursor:pointer; border-radius:4px; width:100%; font-weight:bold; margin-top:20px; }
-        .small-btn { background:#555; color:white; border:none; padding:5px 8px; margin:2px; border-radius:4px; cursor:pointer; }
-        .course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(60px,1fr)); gap:8px; margin:10px 0; background:#222; padding:10px; border-radius:4px; }
+        .course-tag { display:inline-block; background:#555; color:white; padding:2px 6px; border-radius:3px; font-size:0.75em; margin:2px; border:1px solid #666; }
+        
+        /* Tlačítka */
+        .action-btn { background:var(--accent); color:white; border:none; padding:15px; cursor:pointer; border-radius:4px; width:100%; font-weight:bold; margin-top:20px; transition:0.2s; }
+        .action-btn:hover { background:#c92a35; }
+        .small-btn { background:#555; color:white; border:none; padding:6px 10px; margin:2px; border-radius:4px; cursor:pointer; font-size:0.85em; }
+        .small-btn:hover { background:#666; }
+        
+        /* Kurzy grid */
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(50px,1fr)); gap:8px; margin:10px 0; background:var(--input-bg); padding:10px; border-radius:4px; }
+        .course-grid label { font-size:0.8em; cursor:pointer; display:block; background:#333; padding:4px; text-align:center; border-radius:3px; border:1px solid #444; }
+        .course-grid input { display:none; }
+        .course-grid input:checked + span { color:var(--accent); font-weight:bold; }
+
+        /* --- NOVÉ STYLY PRO VYHLEDÁVACÍ SELECT --- */
+        .searchable-wrapper { position: relative; flex:1; }
+        .search-input { width: 100%; box-sizing: border-box; cursor: text; }
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #2a2a2a;
+            border: 1px solid var(--accent);
+            border-radius: 0 0 4px 4px;
+            z-index: 100;
+            display: none; /* Skryté, dokud se neklikne */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+        .suggestions-list.show { display: block; }
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #3d3d3d;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .suggestion-item:hover { background: var(--accent); color: white; }
+        .suggestion-item .rank-badge { font-weight: bold; color: var(--accent); margin-right: 5px; }
+        .suggestion-item:hover .rank-badge { color: white; }
+
+        /* Modal */
         #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background:var(--panel); padding:20px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); }
+        .modal-content { background:var(--panel); padding:25px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); }
+        .modal-buttons { display:flex; gap:10px; margin-top:20px; }
     </style>
 </head>
 <body>
@@ -54,19 +104,7 @@
         <div class="form-row"><label>Příjmení:</label><input type="text" id="reg-lname"></div>
         <div class="form-row"><label>Hodnost:</label>
             <select id="reg-rank">
-                <option value="rtn.">rtn.</option>
-                <option value="stržm.">stržm.</option>
-                <option value="nstržm.">nstržm.</option>
-                <option value="pprap.">pprap.</option>
-                <option value="prap.">prap.</option>
-                <option value="nprap.">nprap.</option>
-                <option value="ppor.">ppor.</option>
-                <option value="por.">por.</option>
-                <option value="npor.">npor.</option>
-                <option value="kpt.">kpt.</option>
-                <option value="mjr.">mjr.</option>
-                <option value="pplk.">pplk.</option>
-                <option value="plk.">plk.</option>
+                <!-- Naplněno JS -->
             </select>
         </div>
         <p>Kurzy:</p>
@@ -76,10 +114,12 @@
 
     <div id="databaze" class="section">
         <h2>Seznam příslušníků</h2>
-        <table id="members-table">
-            <thead><tr><th>Hodnost</th><th>Jméno</th><th>Kurzy</th><th>Směny</th><th>Poslední směna</th><th>Akce</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <div style="overflow-x:auto;">
+            <table id="members-table">
+                <thead><tr><th>Hodnost</th><th>Jméno</th><th>Kurzy</th><th>Směny</th><th>Poslední směna</th><th>Akce</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -91,8 +131,10 @@
         <div class="form-row"><label>Směny:</label><input type="number" id="edit-count"></div>
         <p>Kurzy:</p>
         <div class="course-grid" id="edit-courses-div"></div>
-        <button class="action-btn" onclick="saveEdit()">💾 Uložit</button>
-        <button class="action-btn" style="background:#555" onclick="closeEdit()">Zavřít</button>
+        <div class="modal-buttons">
+            <button class="action-btn" onclick="saveEdit()">💾 Uložit</button>
+            <button class="action-btn" style="background:#555" onclick="closeEdit()">Zavřít</button>
+        </div>
     </div>
 </div>
 
@@ -114,7 +156,7 @@ const VEHICLES = [
     {name:'Ostatní technika',roles:['any','any']}
 ];
 
-const RANKS = ['plk.','pplk.','mjr.','kpt.','por.','npor.','ppor.','nprap.','prap.','pprap.','nstržm.','stržm.','rtn.'];
+const RANKS = ['plk.','pplk.','mjr.','kpt.','npor.','por.','ppor.','nprap.','prap.','pprap.','nstržm.','stržm.','rtn.'];
 
 let members = [];
 
@@ -122,19 +164,99 @@ function init(){
     // naplníme hodnosti do registrace
     document.getElementById('reg-rank').innerHTML = RANKS.map(r=>`<option value="${r}">${r}</option>`).join('');
     
-    // kurzy
-    document.getElementById('reg-courses').innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}">${c}</label>`).join('');
+    // kurzy v registraci
+    document.getElementById('reg-courses').innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}"><span>${c}</span></label>`).join('');
     
-    // vozidla a role
+    // vozidla a role - Generování vlastního vyhledávacího inputu
     const vehContainer = document.getElementById('vehicles-container');
-    vehContainer.innerHTML = VEHICLES.map(v=>`
+    vehContainer.innerHTML = VEHICLES.map((v, vIndex) => `
         <div class="vehicle-card">
             <h3>${v.name}</h3>
-            ${v.roles.map(r => `<div class="form-row"><label>${r==='any'?'Hasič':r==='OD'?'Operační důstojník':r==='S'?'Strojník':'Velitel'}:</label><select data-role="${r}"></select></div>`).join('')}
+            ${v.roles.map((r, rIndex) => {
+                const roleId = `role-${vIndex}-${rIndex}`;
+                const labelText = r==='any'?'Hasič':r==='OD'?'Operační důstojník':r==='S'?'Strojník':'Velitel';
+                return `
+                <div class="form-row">
+                    <label>${labelText}:</label>
+                    <div class="searchable-wrapper">
+                        <input type="text" id="input-${roleId}" class="search-input" placeholder="Hledat..." autocomplete="off" data-role="${r}">
+                        <input type="hidden" id="hidden-${roleId}" class="hidden-member-id">
+                        <ul id="list-${roleId}" class="suggestions-list"></ul>
+                    </div>
+                </div>`;
+            }).join('')}
         </div>
     `).join('');
     
+    // Navěsíme event listenery na všechna nová vyhledávací pole
+    attachSearchListeners();
+    
     loadData();
+}
+
+// Přidání logiky pro vyhledávání
+function attachSearchListeners(){
+    const inputs = document.querySelectorAll('.search-input');
+    inputs.forEach(input => {
+        const role = input.dataset.role;
+        const listId = 'list-' + input.id.replace('input-', '');
+        const list = document.getElementById(listId);
+        const hiddenInput = document.getElementById('hidden-' + input.id.replace('input-', ''));
+
+        // 1. Při kliknutí (focus) zobrazit nabídku
+        input.addEventListener('focus', () => {
+            fillSuggestions(list, role, '');
+            list.classList.add('show');
+        });
+
+        // 2. Při psaní filtrovat
+        input.addEventListener('input', (e) => {
+            fillSuggestions(list, role, e.target.value.toLowerCase());
+            list.classList.add('show');
+        });
+
+        // 3. Při kliknutí mimo (blur) skrýt (s malým zpožděním pro kliknutí na položku)
+        input.addEventListener('blur', () => {
+            setTimeout(() => list.classList.remove('show'), 200);
+        });
+    });
+}
+
+function fillSuggestions(listElement, role, filterText){
+    // Filtrování členů podle role a psaného textu
+    const filtered = members.filter(m => {
+        // Kontrola kurzu
+        if(role !== 'any' && (!m.courses || !m.courses.includes(role))) return false;
+        
+        // Kontrola textu (jméno nebo hodnost)
+        const fullText = `${m.rank} ${m.last_name} ${m.first_name}`.toLowerCase();
+        return fullText.includes(filterText);
+    });
+
+    // Seřazení podle hodnosti
+    filtered.sort((a,b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
+
+    // Generování HTML
+    if(filtered.length === 0){
+        listElement.innerHTML = '<div class="suggestion-item" style="cursor:default; color:#888;">Nikdo nenalezen</div>';
+    } else {
+        listElement.innerHTML = filtered.map(m => `
+            <div class="suggestion-item" onclick="selectMember('${m.id}', '${m.rank} ${m.last_name}', '${listElement.id.replace('list-','')}')">
+                <span class="rank-badge">${m.rank}</span> ${m.last_name} ${m.first_name}
+            </div>
+        `).join('');
+    }
+}
+
+// Globální funkce pro výběr z dropdownu (volá se z onclick v HTML)
+window.selectMember = function(id, nameText, baseId) {
+    const input = document.getElementById('input-' + baseId);
+    const hidden = document.getElementById('hidden-' + baseId);
+    const list = document.getElementById('list-' + baseId);
+
+    input.value = nameText;
+    hidden.value = id;
+    list.classList.remove('show');
 }
 
 async function loadData(){
@@ -142,13 +264,11 @@ async function loadData(){
     if(error) return alert("Chyba načtení: "+error.message);
     members = data || [];
     renderTable();
-    renderSelects();
+    // Selecty se generují dynamicky při focusu, takže zde nemusíme volat renderSelects
 }
-
 
 function renderTable(){
     const tbody = document.querySelector('#members-table tbody');
-    // seřadíme členy podle hierarchie hodností z RANKS
     const sortedMembers = [...members].sort((a, b) => {
         return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank);
     });
@@ -158,7 +278,7 @@ function renderTable(){
             <td>${m.first_name} ${m.last_name}</td>
             <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
             <td>${m.shift_count||0}</td>
-            <td>${m.last_shift || '-'}</td> <!-- nový sloupec s poslední směnou -->
+            <td>${m.last_shift || '-'}</td>
             <td>
                 <button class="small-btn" onclick="openEdit('${m.id}')">✏️</button>
                 <button class="small-btn" onclick="deleteMember('${m.id}')">❌</button>
@@ -167,19 +287,6 @@ function renderTable(){
     `).join('');
 }
     
-function renderSelects(){
-    document.querySelectorAll('select[data-role]').forEach(sel=>{
-        const role = sel.dataset.role;
-        let h = '<option value="">-- vybrat --</option>';
-        members.forEach(m=>{
-            if(role==='any' || (m.courses && m.courses.includes(role))){
-                h += `<option value="${m.id}">${m.rank} ${m.last_name}</option>`;
-            }
-        });
-        sel.innerHTML = h;
-    });
-}
-
 async function registerMember(){
     const fn = document.getElementById('reg-fname').value.trim();
     const ln = document.getElementById('reg-lname').value.trim();
@@ -195,26 +302,33 @@ async function registerMember(){
 }
 
 async function submitShift(){
-    // všechny selecty, jen ty s vybranou hodnotou
-    const ids = [...new Set(Array.from(document.querySelectorAll('select'))
-        .map(s => s.value)
-        .filter(v => v && /^[0-9a-fA-F\-]{36}$/.test(v)) // jen validní UUID
+    // Najdeme všechny hidden inputy, které mají UUID
+    const hiddenInputs = document.querySelectorAll('.hidden-member-id');
+    const ids = [...new Set(Array.from(hiddenInputs)
+        .map(input => input.value)
+        .filter(v => v && /^[0-9a-fA-F\-]{36}$/.test(v))
     )];
-    if(ids.length === 0) return alert("Nikdo není vybrán!");
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if(ids.length === 0) return alert("Nikdo není vybrán (nebo jsou pole prázdná)!");
+    
+    const date = new Date().toISOString().split('T')[0];
     for(let id of ids){
         const m = members.find(x => String(x.id) === String(id));
         if(m){
             const { error } = await _db.from('members')
                 .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
-                .eq('id', id); // id musí být validní UUID
+                .eq('id', id);
             if(error) console.error("Supabase error:", error);
         }
     }
     alert("Směna zapsána!");
+    
+    // Vyčistíme formulář po úspěchu
+    document.querySelectorAll('.search-input').forEach(i => i.value = '');
+    document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
+    
     loadData();
 }
-
 
 function switchTab(e,id){
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -235,7 +349,7 @@ function openEdit(id){
     rankSelect.value = m.rank;
     
     const div = document.getElementById('edit-courses-div');
-    div.innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}" ${m.courses&&m.courses.includes(c)?'checked':''}>${c}</label>`).join('');
+    div.innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}" ${m.courses&&m.courses.includes(c)?'checked':''}><span>${c}</span></label>`).join('');
     
     document.getElementById('edit-modal').style.display='flex';
 }
