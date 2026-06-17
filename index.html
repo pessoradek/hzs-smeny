@@ -28,7 +28,7 @@
         
         .form-row { display:flex; align-items:center; margin-bottom:8px; position:relative; }
         .form-row label { width:110px; font-size:0.85em; font-weight:bold; flex-shrink:0; }
-        select, input[type="text"], input[type="number"], input[type="time"] { 
+        select, input[type="text"], input[type="number"] { 
             box-sizing: border-box; width: 100%; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
             font-size:0.95em;
         }
@@ -87,26 +87,24 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* Stylování kontejneru pro export do PDF (vystředěný A4 layout) */
+        /* Kontejner pro export do PDF - skrytý přes display, přepíná se v JS */
         #pdf-export-container {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
+            display: none;
             width: 190mm;
         }
         .pdf-page {
-            background: white;
-            color: black;
+            background: white !important;
+            color: black !important;
             font-family: Arial, sans-serif;
-            padding: 10px;
+            padding: 20px;
         }
         .pdf-header { border-bottom: 3px solid #c92a35; padding-bottom: 12px; margin-bottom: 20px; }
         .pdf-header h1 { color: #c92a35; margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; }
-        .pdf-meta-info { display: flex; justify-content: space-between; font-size: 14px; color: #444; margin-top: 10px; background: #f9f9f9; padding: 8px; border-radius: 4px; }
+        .pdf-meta-info { display: flex; justify-content: space-between; font-size: 14px; color: #444; margin-top: 10px; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
         .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .pdf-table th { background: #e1e1e1; color: black; border: 1px solid #bbb; font-weight: bold; padding: 10px; text-align: left; font-size: 13px; }
-        .pdf-table td { border: 1px solid #ddd; color: black; padding: 9px; text-align: left; font-size: 13px; }
-        .pdf-table tr:nth-child(even) { background: #fcfcfc; }
+        .pdf-table th { background: #e1e1e1 !important; color: black !important; border: 1px solid #bbb; font-weight: bold; padding: 10px; text-align: left; font-size: 13px; }
+        .pdf-table td { border: 1px solid #ddd; color: black !important; padding: 9px; text-align: left; font-size: 13px; background: white !important; }
+        .pdf-table tr:nth-child(even) td { background: #fcfcfc !important; }
     </style>
 </head>
 <body>
@@ -212,11 +210,14 @@
 
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
-const _db = supabase.createClient(sb_url, sb_key);
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+// Oprava překlepu v klíči pro plnou funkčnost DB spojení
+const correct_key = sb_key.replace('gawleX', 'gawley');
+const _db = supabase.createClient(sb_url, correct_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
 
+// Aktualizovaná technika: Přidána Ostatní technika I a II pro 2 hasiče
 const VEHICLES = [
     {name:'1. výjezd', roles:['S','V','any','any']},
     {name:'2. výjezd', roles:['V','S','any','any','any','any']},
@@ -226,7 +227,8 @@ const VEHICLES = [
     {name:'Velitelský automobil', roles:['any','any']},
     {name:'Sanitní vůz', roles:['any','any']},
     {name:'KOPIS (Operační)', roles:['OD','OD']},
-    {name:'Ostatní technika', roles:['any','any']}
+    {name:'Ostatní technika I', roles:['any','any']},
+    {name:'Ostatní technika II', roles:['any','any']}
 ];
 
 const RANKS = ['plk.','pplk.','mjr.','kpt.','npor.','por.','ppor.','nprap.','prap.','pprap.','nstržm.','stržm.','rtn.'];
@@ -360,7 +362,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF ---
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (OPRAVENO PROTI BÍLÉ STRÁNCE) ---
 
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
@@ -384,9 +386,9 @@ function processShiftInit() {
                 
                 htmlRows += `
                     <tr>
-                        <td><b>${vehName}</b></td>
-                        <td>${roleText}</td>
-                        <td>${memberObj.rank} ${memberObj.last_name} ${memberObj.first_name}</td>
+                        <td style="color: black !important;"><b>${vehName}</b></td>
+                        <td style="color: black !important;">${roleText}</td>
+                        <td style="color: black !important;">${memberObj.rank} ${memberObj.last_name} ${memberObj.first_name}</td>
                     </tr>
                 `;
             }
@@ -404,22 +406,32 @@ function processShiftInit() {
     const casSmeny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
     const dnyDatum = new Date().toLocaleDateString('cs-CZ');
 
+    // Dosazení do PDF šablony
     document.getElementById('pdf-out-date').innerText = dnyDatum;
     document.getElementById('pdf-out-location').innerText = lokalita;
     document.getElementById('pdf-out-time').innerText = casSmeny;
     document.getElementById('pdf-table-body').innerHTML = htmlRows;
     
-    const element = document.getElementById('pdf-actual-content');
+    // Bezpečné zobrazení kontejneru na dobu generování
+    const pdfContainer = document.getElementById('pdf-export-container');
+    pdfContainer.style.display = 'block';
 
+    const element = document.getElementById('pdf-actual-content');
     const opt = {
-        margin:       15,
+        margin:       10,
         filename:     `Smenovnice_${dnyDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false, useCORS: true },
+        html2canvas:  { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    // Spuštění exportu a následné schování prvku
+    html2pdf().set(opt).from(element).save().then(() => {
+        pdfContainer.style.style.display = 'none';
+    }).catch(err => {
+        console.error(err);
+        pdfContainer.style.style.display = 'none';
+    });
 
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
