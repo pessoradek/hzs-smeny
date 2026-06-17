@@ -355,4 +355,141 @@ function processShiftInit() {
         margin:       10,
         filename:     `Smenovnice_${dnešníDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale
+        html2canvas:  { scale: 2, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.style.display = 'none'; // Opět skrýt
+    });
+
+    // 2. Odemknout panel pro verifikaci na konci směny (čárky se zatím nepřičetly!)
+    renderVerificationList();
+    document.getElementById('verification-section').style.display = 'block';
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    alert("Směna byla lokálně uložena a PDF staženo. Na konci směny potvrďte docházku níže.");
+}
+
+function renderVerificationList() {
+    const container = document.getElementById('verification-list');
+    // Odstranění duplicit, pokud byl někdo zapsán na více pozicích
+    const uniqueMembers = [];
+    const map = new Map();
+    for (const item of activeShiftMembers) {
+        if(!map.has(item.id)){
+            map.set(item.id, true);
+            uniqueMembers.push(item);
+        }
+    }
+    activeShiftMembers = uniqueMembers;
+
+    container.innerHTML = activeShiftMembers.map((m, index) => `
+        <div class="verif-row" id="verif-m-${m.id}">
+            <span>👤 ${m.fullname}</span>
+            <button class="small-btn" style="background:#e63946;" onclick="removeFromVerification('${m.id}')">❌ Odebrat ze směny</button>
+        </div>
+    `).join('');
+}
+
+function removeFromVerification(id) {
+    activeShiftMembers = activeShiftMembers.filter(m => String(m.id) !== String(id));
+    const el = document.getElementById(`verif-m-${id}`);
+    if(el) el.remove();
+    if(activeShiftMembers.length === 0) {
+        document.getElementById('verification-section').style.display = 'none';
+    }
+}
+
+async function finalizeShiftCount() {
+    if (activeShiftMembers.length === 0) return alert("Seznam členů k zapsání je prázdný.");
+    
+    const date = new Date().toISOString().split('T')[0];
+    let successCount = 0;
+
+    for (let current of activeShiftMembers) {
+        const m = members.find(x => String(x.id) === String(current.id));
+        if (m) {
+            const { error } = await _db.from('members')
+                .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
+                .eq('id', m.id);
+            if (!error) successCount++;
+            else console.error("Chyba při zápisu:", error);
+        }
+    }
+
+    alert(`Úspěšně potvrzeno! Čárka byla připsána ${successCount} příslušníkům.`);
+    
+    // Reset formuláře i ověřovacího okna
+    document.querySelectorAll('.search-input').forEach(i => i.value = '');
+    document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
+    document.getElementById('verification-section').style.display = 'none';
+    activeShiftMembers = [];
+    loadData();
+}
+
+// --- ZBYTEK FUNKCÍ BEZ ZMĚN ---
+
+async function registerMember(){
+    const fn = document.getElementById('reg-fname').value.trim();
+    const ln = document.getElementById('reg-lname').value.trim();
+    const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
+    if(!fn||!ln) return alert("Chybí jméno!");
+    const { error } = await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
+    if(error) return alert("Chyba: "+error.message);
+    alert("Člen úspěšně registrován!");
+    document.getElementById('reg-fname').value='';
+    document.getElementById('reg-lname').value='';
+    document.querySelectorAll('#reg-courses input').forEach(i=>i.checked=false);
+    loadData();
+}
+
+function switchTab(e,id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    e.currentTarget.classList.add('active');
+}
+
+function openEdit(id){
+    const m = members.find(x=>String(x.id)===String(id));
+    if(!m) return;
+    document.getElementById('edit-id').value = m.id;
+    document.getElementById('edit-name').innerText = `Upravit ${m.first_name} ${m.last_name}`;
+    document.getElementById('edit-count').value = m.shift_count || 0;
+    
+    const rankSelect = document.getElementById('edit-rank');
+    rankSelect.innerHTML = RANKS.map(r=>`<option value="${r}">${r}</option>`).join('');
+    rankSelect.value = m.rank;
+    
+    const div = document.getElementById('edit-courses-div');
+    div.innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}" ${m.courses&&m.courses.includes(c)?'checked':''}><span>${c}</span></label>`).join('');
+    
+    document.getElementById('edit-modal').style.display='flex';
+}
+
+async function saveEdit(){
+    const id = document.getElementById('edit-id').value;
+    const rank = document.getElementById('edit-rank').value;
+    const count = parseInt(document.getElementById('edit-count').value)||0;
+    const courses = Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(i=>i.value);
+    const { error } = await _db.from('members').update({ rank, shift_count:count, courses }).eq('id',id);
+    if(error) return alert("Chyba: "+error.message);
+    closeEdit();
+    loadData();
+}
+
+async function deleteMember(id){
+    if(!confirm("Opravdu chceš smazat tohoto člena?")) return;
+    const { error } = await _db.from('members').delete().eq('id', id);
+    if(error) return alert("Chyba mazání: "+error.message);
+    alert("Člen byl smazán!");
+    loadData();
+}
+
+function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+
+document.getElementById('date-display').innerText = new Date().toLocaleDateString('cs-CZ');
+init();
+</script>
+</body>
+</html>
