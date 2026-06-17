@@ -17,7 +17,6 @@
         .section { display:none; background:var(--panel); padding:20px; border-radius:8px; border:1px solid var(--border); }
         .section.active { display:block; }
         
-        /* Parametry směny (Místo a Čas začátku) */
         .shift-meta-panel { display: flex; flex-wrap: wrap; gap: 15px; background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
         .meta-group { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 5px; }
         .meta-group label { font-size: 0.85em; font-weight: bold; color: var(--accent); }
@@ -70,13 +69,7 @@
             list-style: none;
         }
         .suggestions-list.show { display: block; }
-        .suggestion-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #3d3d3d;
-            font-size:0.9em;
-            color: #ccc;
-        }
+        .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #3d3d3d; font-size:0.9em; color: #ccc; }
         .suggestion-item:hover { background: var(--accent); color: white; }
         .suggestion-item .rank-badge { font-weight: bold; color: var(--accent); margin-right: 5px; }
 
@@ -87,20 +80,8 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* Kontejner pro export do PDF schovaný bezpečně mimo viewport */
-        #pdf-export-container {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            width: 190mm;
-            background: #ffffff !important;
-        }
-        .pdf-page {
-            background: #ffffff !important;
-            color: #000000 !important;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+        #pdf-export-container { position: absolute; left: -9999px; top: -9999px; width: 190mm; background: #ffffff !important; }
+        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 20px; }
     </style>
 </head>
 <body>
@@ -189,21 +170,11 @@
 
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
-
-<div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:15px;margin-bottom:20px;">
-    <h1 style="margin:0;color:#c92a35;font-size:30px;">
-        HASIČSKÝ ZÁCHRANNÝ SBOR
-    </h1>
-
-    <h2 style="margin:5px 0;color:#000000;">
-        DENNÍ ROZKAZ SMENS
-    </h2>
-
-    <div style="font-size:12px;color:#666;">
-        Evidenční číslo:
-        <span id="pdf-order-id"></span>
-    </div>
-</div>
+        <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:15px;margin-bottom:20px;">
+            <h1 style="margin:0;color:#c92a35;font-size:30px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
+            <h2 style="margin:5px 0;color:#000000;">DENNÍ ROZKAZ SMĚNY</h2>
+            <div style="font-size:12px;color:#666;">Evidenční číslo: <span id="pdf-order-id"></span></div>
+        </div>
 
         <table style="width:100%;margin-bottom:20px;border-collapse:collapse;color:#000000;">
             <tr>
@@ -211,49 +182,27 @@
                 <td><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
             </tr>
             <tr>
-                <td colspan="2">
-                    <b>Stanice:</b>
-                    <span id="pdf-out-location"></span>
-                </td>
+                <td colspan="2"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
             </tr>
         </table>
 
         <hr style="border:0;border-top:1px solid #ccc;">
-
         <div style="background:#f2f2f2;padding:10px;border-left:4px solid #c92a35;margin-bottom:15px;color:black;font-weight:bold;">
             Rozdělení příslušníků a techniky pro výkon služby
         </div>
 
-<h3 style="color:#000000;">
-    Osádky vozidel
-</h3>
-
+        <h3 style="color:#000000;">Osádky vozidel</h3>
         <div id="pdf-vehicle-groups" style="color:#000000;"></div>
 
         <br><br>
-
         <table style="width:100%;margin-top:40px;color:#000000;">
             <tr>
-                <td style="width:50%;text-align:center;">
-                    _______________________
-                    <br>
-                    Operační důstojník
-                </td>
-                <td style="width:50%;text-align:center;">
-                    _______________________
-                    <br>
-                    Velitel směny
-                </td>
+                <td style="width:50%;text-align:center;">_______________________<br>Operační důstojník</td>
+                <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
             </tr>
         </table>
-
         <br><br>
-
-<div style="font-size:12px;color:#555;text-align:center;">
-    Dokument vytvořen dne
-    <span id="pdf-generated"></span>
-</div>
-
+        <div style="font-size:12px;color:#555;text-align:center;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
     </div>
 </div>
     
@@ -263,7 +212,6 @@ const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
-
 const VEHICLES = [
     {name:'1. výjezd', roles:['S','V','any','any']},
     {name:'2. výjezd', roles:['V','S','any','any','any','any']},
@@ -276,7 +224,6 @@ const VEHICLES = [
     {name:'Ostatní technika I', roles:['any','any']},
     {name:'Ostatní technika II', roles:['any','any']}
 ];
-
 const RANKS = ['plk.','pplk.','mjr.','kpt.','npor.','por.','ppor.','nprap.','prap.','pprap.','nstržm.','stržm.','rtn.'];
 
 let members = [];
@@ -319,7 +266,7 @@ function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
         const role = input.dataset.role;
-        const baseId = input.id.replace('input-', ''); // OPRAVENO: Bezpečnější extrakce ID základny
+        const baseId = input.id.replace('input-', ''); 
         const list = document.getElementById('list-' + baseId);
 
         input.addEventListener('focus', () => {
@@ -408,7 +355,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (OPRAVENO A FUNKČNÍ) ---
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (ZCELA OPRAVENO) ---
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
@@ -450,51 +397,38 @@ function processShiftInit() {
     const casSmeny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
     const dnyDatum = new Date().toLocaleDateString('cs-CZ');
 
-    // Vložení metadat do struktury PDF
     document.getElementById('pdf-out-date').innerText = dnyDatum;
     document.getElementById('pdf-out-location').innerText = lokalita;
     document.getElementById('pdf-out-time').innerText = casSmeny;
     const now = new Date();
 
-    document.getElementById('pdf-generated').innerText =
-        now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ');
+    document.getElementById('pdf-generated').innerText = now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ');
+    document.getElementById('pdf-order-id').innerText = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
 
-    document.getElementById('pdf-order-id').innerText =
-        now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-
-    // Sestavení a vložení HTML rozdělení pro techniku do PDF
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-        <table style="width:100%; border-collapse:collapse; margin-bottom:15px;">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:15px; color:#000000;">
         <tr>
             <th colspan="2" style="background:#c92a35; color:white; padding:8px; text-align:left;">
                 ${vehicle}
             </th>
         </tr>
         `;
-
         crew.forEach(person => {
             pdfHtml += `
             <tr>
-                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">
-                    ${person.role}
-                </td>
-                <td style="border:1px solid #ccc; padding:6px;">
-                    ${person.member}
-                </td>
+                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">${person.role}</td>
+                <td style="border:1px solid #ccc; padding:6px;">${person.member}</td>
             </tr>
             `;
         });
-
         pdfHtml += `</table>`;
     });
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
-    // Načtení finálního čistého elementu pro tisk
     const element = document.getElementById('pdf-actual-content');
-    
     const opt = {
         margin:       10,
         filename:     `Smenovnice_${dnyDatum.replace(/\s/g, '')}.pdf`,
@@ -503,7 +437,6 @@ function processShiftInit() {
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Vykreslení do PDF
     html2pdf().set(opt).from(element).save().catch(err => {
         console.error("Chyba při exportu PDF: ", err);
     });
@@ -511,12 +444,11 @@ function processShiftInit() {
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    alert("Směna sestavena a PDF staženo! Docházku potvrďte dole na stránce na konci směny.");
+    alert("Směna sestavena a PDF staženo!");
 }
 
 function renderVerificationList() {
     const container = document.getElementById('verification-list');
-    
     const uniqueMembers = [];
     const map = new Map();
     for (const item of activeShiftMembers) {
@@ -546,35 +478,28 @@ window.removeFromVerification = function(id) {
 
 async function finalizeShiftCount() {
     if (activeShiftMembers.length === 0) return alert("Seznam členů k zapsání je prázdný.");
-    
     const date = new Date().toISOString().split('T')[0];
     let successCount = 0;
 
     for (let current of activeShiftMembers) {
         const m = members.find(x => String(x.id) === String(current.id));
         if (m) {
-            const { error } = await _db.from('members')
-                .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
-                .eq('id', m.id);
+            const { error } = await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', m.id);
             if (!error) successCount++;
-            else console.error("Chyba zápisu do Supabase:", error);
         }
     }
 
-    alert(`Zápis dokončen! Čárka byla úspěšně připsána ${successCount} příslušníkům.`);
+    alert(`Zápis dokončen! Čárka byla připsána ${successCount} příslušníkům.`);
     
     document.querySelectorAll('.search-input').forEach(i => i.value = '');
     document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
     document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
     document.getElementById('shift-location-custom').style.display = 'none';
-    document.getElementById('shift-location-custom').value = '';
     document.getElementById('shift-time').value = '19:00';
     document.getElementById('verification-section').style.display = 'none';
     activeShiftMembers = [];
     loadData();
 }
-
-// --- SPRÁVA DATABÁZE ---
 
 async function registerMember(){
     const fn = document.getElementById('reg-fname').value.trim();
@@ -582,14 +507,7 @@ async function registerMember(){
     const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
     if(!fn||!ln) return alert("Chybí jméno nebo příjmení!");
     
-    const { error } = await _db.from('members').insert({ 
-        first_name: fn, 
-        last_name: ln, 
-        rank: document.getElementById('reg-rank').value, 
-        courses: crs, 
-        shift_count: 0 
-    });
-    
+    const { error } = await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
     if(error) return alert("Chyba při registraci: "+error.message);
     alert("Člen úspěšně registrován!");
     document.getElementById('reg-fname').value='';
