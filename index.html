@@ -169,14 +169,20 @@
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
 
-        <div style="text-align:center; margin-bottom:20px;">
-            <h1 style="margin:0;color:#c92a35;font-size:28px;">
-                HASIČSKÝ ZÁCHRANNÝ SBOR
-            </h1>
-            <h2 style="margin:5px 0;color:#000000;">
-                DENNÍ ROZKAZ SMĚNY
-            </h2>
-        </div>
+<div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:15px;margin-bottom:20px;">
+    <h1 style="margin:0;color:#c92a35;font-size:30px;">
+        HASIČSKÝ ZÁCHRANNÝ SBOR
+    </h1>
+
+    <h2 style="margin:5px 0;color:#000000;">
+        DENNÍ ROZKAZ SMĚNY
+    </h2>
+
+    <div style="font-size:12px;color:#666;">
+        Evidenční číslo:
+        <span id="pdf-order-id"></span>
+    </div>
+</div>
 
         <table style="width:100%;margin-bottom:20px;border-collapse:collapse;color:#000000;">
             <tr>
@@ -193,7 +199,18 @@
 
         <hr style="border:0;border-top:1px solid #ccc;">
 
-        <h3 style="color:#000000;">Rozdělení příslušníků</h3>
+        <div style="
+background:#f2f2f2;
+padding:10px;
+border-left:4px solid #c92a35;
+margin-bottom:15px;
+">
+    Rozdělení příslušníků a techniky pro výkon služby
+</div>
+
+<h3 style="color:#000000;">
+    Osádky vozidel
+</h3>
 
         <div id="pdf-vehicle-groups" style="color:#000000;"></div>
 
@@ -216,9 +233,10 @@
 
         <br><br>
 
-        <div style="font-size:12px;color:#555;">
-            Dokument byl automaticky vytvořen systémem HZS Směnovnice.
-        </div>
+<div style="font-size:12px;color:#555;text-align:center;">
+    Dokument vytvořen dne
+    <span id="pdf-generated"></span>
+</div>
 
     </div>
 </div>
@@ -422,26 +440,64 @@ function processShiftInit() {
     document.getElementById('pdf-out-date').innerText = dnyDatum;
     document.getElementById('pdf-out-location').innerText = lokalita;
     document.getElementById('pdf-out-time').innerText = casSmeny;
+    const now = new Date();
+
+document.getElementById('pdf-generated').innerText =
+    now.toLocaleDateString('cs-CZ')
+    + ' '
+    + now.toLocaleTimeString('cs-CZ');
+
+document.getElementById('pdf-order-id').innerText =
+    now.getFullYear()
+    + '-'
+    + String(now.getMonth() + 1).padStart(2,'0')
+    + '-'
+    + String(now.getDate()).padStart(2,'0');
 
     // Sestavení a vložení nového HTML rozdělení pro techniku
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-            <div style="border:1px solid #ccc; margin-bottom:15px; padding:10px; background:#fff;">
-                <h3 style="margin:0 0 10px 0; color:#c92a35;">
-                    ${vehicle}
-                </h3>
-        `;
-        crew.forEach(person => {
-            pdfHtml += `
-                <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dotted #ccc; color:#000;">
-                    <span><b>${person.role}</b></span>
-                    <span>${person.member}</span>
-                </div>
-            `;
-        });
-        pdfHtml += `</div>`;
-    });
+<table style="
+width:100%;
+border-collapse:collapse;
+margin-bottom:15px;
+">
+<tr>
+    <th colspan="2"
+        style="
+        background:#c92a35;
+        color:white;
+        padding:8px;
+        text-align:left;
+    ">
+        ${vehicle}
+    </th>
+</tr>
+`;
+
+crew.forEach(person => {
+    pdfHtml += `
+    <tr>
+        <td style="
+            border:1px solid #ccc;
+            padding:6px;
+            width:35%;
+        ">
+            ${person.role}
+        </td>
+
+        <td style="
+            border:1px solid #ccc;
+            padding:6px;
+        ">
+            ${person.member}
+        </td>
+    </tr>
+    `;
+});
+
+pdfHtml += `</table>`;
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
