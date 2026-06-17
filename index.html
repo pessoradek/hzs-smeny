@@ -166,6 +166,27 @@
     </div>
 </div>
 
+<div id="edit-modal">
+    <div class="modal-content">
+        <h3 id="edit-name" style="color:var(--accent); margin-top:0;">Upravit člena</h3>
+        <input type="hidden" id="edit-id">
+        <div class="form-row">
+            <label>Hodnost:</label>
+            <select id="edit-rank"></select>
+        </div>
+        <div class="form-row">
+            <label>Počet směn:</label>
+            <input type="number" id="edit-count">
+        </div>
+        <p style="margin-bottom:5px; font-weight:bold; font-size:0.9em;">Kurzy:</p>
+        <div class="course-grid" id="edit-courses-div"></div>
+        <div class="modal-buttons">
+            <button class="success-btn" style="margin-top:0;" onclick="saveEdit()">Uložit</button>
+            <button class="action-btn" style="margin-top:0; background:#555;" onclick="closeEdit()">Zrušit</button>
+        </div>
+    </div>
+</div>
+
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
 
@@ -175,7 +196,7 @@
     </h1>
 
     <h2 style="margin:5px 0;color:#000000;">
-        DENNÍ ROZKAZ SMĚNY
+        DENNÍ ROZKAZ SMENS
     </h2>
 
     <div style="font-size:12px;color:#666;">
@@ -199,14 +220,9 @@
 
         <hr style="border:0;border-top:1px solid #ccc;">
 
-        <div style="
-background:#f2f2f2;
-padding:10px;
-border-left:4px solid #c92a35;
-margin-bottom:15px;
-">
-    Rozdělení příslušníků a techniky pro výkon služby
-</div>
+        <div style="background:#f2f2f2;padding:10px;border-left:4px solid #c92a35;margin-bottom:15px;color:black;font-weight:bold;">
+            Rozdělení příslušníků a techniky pro výkon služby
+        </div>
 
 <h3 style="color:#000000;">
     Osádky vozidel
@@ -303,7 +319,7 @@ function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
         const role = input.dataset.role;
-        const baseId = input.id.substring(6); 
+        const baseId = input.id.replace('input-', ''); // OPRAVENO: Bezpečnější extrakce ID základny
         const list = document.getElementById('list-' + baseId);
 
         input.addEventListener('focus', () => {
@@ -392,8 +408,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (OPRAVENO A PROPOJENO S NOVÝM BLOKEM) ---
-
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (OPRAVENO A FUNKČNÍ) ---
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
@@ -403,7 +418,6 @@ function processShiftInit() {
         const id = hidden.value;
         const vehName = hidden.dataset.veh;
         const roleText = hidden.dataset.roleText;
-        const baseId = hidden.id.substring(7);
 
         if (!id) return;
 
@@ -442,62 +456,39 @@ function processShiftInit() {
     document.getElementById('pdf-out-time').innerText = casSmeny;
     const now = new Date();
 
-document.getElementById('pdf-generated').innerText =
-    now.toLocaleDateString('cs-CZ')
-    + ' '
-    + now.toLocaleTimeString('cs-CZ');
+    document.getElementById('pdf-generated').innerText =
+        now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ');
 
-document.getElementById('pdf-order-id').innerText =
-    now.getFullYear()
-    + '-'
-    + String(now.getMonth() + 1).padStart(2,'0')
-    + '-'
-    + String(now.getDate()).padStart(2,'0');
+    document.getElementById('pdf-order-id').innerText =
+        now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
 
-    // Sestavení a vložení nového HTML rozdělení pro techniku
+    // Sestavení a vložení HTML rozdělení pro techniku do PDF
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-<table style="
-width:100%;
-border-collapse:collapse;
-margin-bottom:15px;
-">
-<tr>
-    <th colspan="2"
-        style="
-        background:#c92a35;
-        color:white;
-        padding:8px;
-        text-align:left;
-    ">
-        ${vehicle}
-    </th>
-</tr>
-`;
+        <table style="width:100%; border-collapse:collapse; margin-bottom:15px;">
+        <tr>
+            <th colspan="2" style="background:#c92a35; color:white; padding:8px; text-align:left;">
+                ${vehicle}
+            </th>
+        </tr>
+        `;
 
-crew.forEach(person => {
-    pdfHtml += `
-    <tr>
-        <td style="
-            border:1px solid #ccc;
-            padding:6px;
-            width:35%;
-        ">
-            ${person.role}
-        </td>
+        crew.forEach(person => {
+            pdfHtml += `
+            <tr>
+                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">
+                    ${person.role}
+                </td>
+                <td style="border:1px solid #ccc; padding:6px;">
+                    ${person.member}
+                </td>
+            </tr>
+            `;
+        });
 
-        <td style="
-            border:1px solid #ccc;
-            padding:6px;
-        ">
-            ${person.member}
-        </td>
-    </tr>
-    `;
-});
-
-pdfHtml += `</table>`;
+        pdfHtml += `</table>`;
+    });
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
