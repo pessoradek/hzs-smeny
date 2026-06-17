@@ -92,7 +92,7 @@
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 190mm; /* Šířka obsahu pro html2pdf */
+            width: 190mm;
         }
         .pdf-page {
             background: white;
@@ -211,6 +211,7 @@
 </div>
 
 <script>
+// Opravené a ověřené credentials ze Supabase
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
 const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
@@ -360,7 +361,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + OPRAVENÉ PDF ---
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF ---
 
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
@@ -382,7 +383,6 @@ function processShiftInit() {
                     fullname: `${memberObj.rank} ${memberObj.last_name} ${memberObj.first_name}`
                 });
                 
-                // Generování řádku čistě textově pro zachování obsahu v html2pdf
                 htmlRows += `
                     <tr>
                         <td><b>${vehName}</b></td>
@@ -398,38 +398,30 @@ function processShiftInit() {
         return alert("Nikdo nebyl do směny vybrán!");
     }
 
-    // Určení správného místa směny
     let lokalita = document.getElementById('shift-location').value;
     if (lokalita === 'custom') {
         lokalita = document.getElementById('shift-location-custom').value.trim() || 'Nespecifikováno';
     }
-    const casSměny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
-    const dnešníDatum = new Date().toLocaleDateString('cs-CZ');
+    const casSmeny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
+    const dnyDatum = new Date().toLocaleDateString('cs-CZ');
 
-    // Vložení textu přímo do DOM před zachycením knihovnou
-    document.getElementById('pdf-out-date').innerText = dnešníDatum;
+    document.getElementById('pdf-out-date').innerText = dnyDatum;
     document.getElementById('pdf-out-location').innerText = lokalita;
-    document.getElementById('pdf-out-time').innerText = casSměny;
+    document.getElementById('pdf-out-time').innerText = casSmeny;
     document.getElementById('pdf-table-body').innerHTML = htmlRows;
     
-    // Načtení elementu pro export
     const element = document.getElementById('pdf-actual-content');
 
     const opt = {
         margin:       15,
-        filename:     `Smenovnice_${dnešníDatum.replace(/\s/g, '')}.pdf`,
+        filename:     `Smenovnice_${dnyDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, logging: false, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Spuštění bezpečné konverze viditelného fragmentu
-    html2pdf().set(opt).from(element).save().then(() => {
-        // Po úspěšném stažení uvolníme paměť z tabulky
-        console.log("PDF úspěšně uloženo.");
-    });
+    html2pdf().set(opt).from(element).save();
 
-    // 2. Odemknout spodní schvalovací panel docházky
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -439,7 +431,6 @@ function processShiftInit() {
 function renderVerificationList() {
     const container = document.getElementById('verification-list');
     
-    // Filtrace duplicit
     const uniqueMembers = [];
     const map = new Map();
     for (const item of activeShiftMembers) {
@@ -486,7 +477,6 @@ async function finalizeShiftCount() {
 
     alert(`Zápis dokončen! Čárka byla úspěšně připsána ${successCount} příslušníkům.`);
     
-    // Reset prvků
     document.querySelectorAll('.search-input').forEach(i => i.value = '');
     document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
     document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
