@@ -17,7 +17,7 @@
         .section { display:none; background:var(--panel); padding:20px; border-radius:8px; border:1px solid var(--border); }
         .section.active { display:block; }
         
-        /* Parametry směny (Místo a Čas) */
+        /* Parametry směny (Místo a Čas začátku) */
         .shift-meta-panel { display: flex; flex-wrap: wrap; gap: 15px; background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
         .meta-group { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 5px; }
         .meta-group label { font-size: 0.85em; font-weight: bold; color: var(--accent); }
@@ -28,7 +28,7 @@
         
         .form-row { display:flex; align-items:center; margin-bottom:8px; position:relative; }
         .form-row label { width:110px; font-size:0.85em; font-weight:bold; flex-shrink:0; }
-        select, input[type="text"], input[type="number"] { 
+        select, input[type="text"], input[type="number"], input[type="time"] { 
             box-sizing: border-box; width: 100%; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
             font-size:0.95em;
         }
@@ -134,8 +134,8 @@
                     <input type="text" id="shift-location-custom" placeholder="Napište vlastní lokalitu..." style="display:none; margin-top:5px;">
                 </div>
                 <div class="meta-group">
-                    <label for="shift-time">Čas / Trvání směny:</label>
-                    <input type="text" id="shift-time" placeholder="např. 08:00 - 20:00, nebo 24h" value="24h">
+                    <label for="shift-time">Čas začátku směny:</label>
+                    <input type="text" id="shift-time" placeholder="např. 19:00, 07:00 atd." value="19:00">
                 </div>
             </div>
 
@@ -179,7 +179,7 @@
             <div class="pdf-meta-info">
                 <span><b>Datum:</b> <span id="pdf-out-date"></span></span>
                 <span><b>Místo:</b> <span id="pdf-out-location"></span></span>
-                <span><b>Čas:</b> <span id="pdf-out-time"></span></span>
+                <span><b>Začátek směny:</b> <span id="pdf-out-time"></span></span>
             </div>
         </div>
         <table class="pdf-table">
@@ -211,7 +211,6 @@
 </div>
 
 <script>
-// Opravené a ověřené credentials ze Supabase
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
 const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
@@ -482,7 +481,7 @@ async function finalizeShiftCount() {
     document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
     document.getElementById('shift-location-custom').style.display = 'none';
     document.getElementById('shift-location-custom').value = '';
-    document.getElementById('shift-time').value = '24h';
+    document.getElementById('shift-time').value = '19:00';
     document.getElementById('verification-section').style.display = 'none';
     activeShiftMembers = [];
     loadData();
