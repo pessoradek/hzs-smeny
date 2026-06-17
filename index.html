@@ -23,7 +23,7 @@
         .form-row { display:flex; align-items:center; margin-bottom:8px; position:relative; }
         .form-row label { width:110px; font-size:0.85em; font-weight:bold; flex-shrink:0; }
         select, input[type="text"], input[type="number"] { 
-            flex:1; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
+            box-sizing: border-box; width: 100%; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
             font-size:0.95em;
         }
         select:focus, input:focus { outline:1px solid var(--accent); border-color:var(--accent); }
@@ -44,7 +44,7 @@
         .course-grid input { display:none; }
         .course-grid input:checked + span { color:var(--accent); font-weight:bold; }
 
-        .searchable-wrapper { position: relative; flex:1; }
+        .searchable-wrapper { position: relative; flex:1; width: 100%; }
         .search-input { width: 100%; box-sizing: border-box; cursor: text; }
         .suggestions-list {
             position: absolute;
@@ -59,6 +59,9 @@
             z-index: 9999;
             display: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            padding: 0;
+            margin: 0;
+            list-style: none;
         }
         .suggestions-list.show { display: block; }
         .suggestion-item {
@@ -70,21 +73,21 @@
         }
         .suggestion-item:hover { background: var(--accent); color: white; }
         .suggestion-item .rank-badge { font-weight: bold; color: var(--accent); margin-right: 5px; }
+        .suggestion-item:hover .rank-badge { color: white; }
 
         #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--panel); padding:25px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); }
         .modal-buttons { display:flex; gap:10px; margin-top:20px; }
 
-        /* Styly pro sekci konečného ověření */
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* Skrytá šablona čistě pro PDF export */
-        #pdf-template { display: none; background: white; color: black; padding: 30px; font-family: 'Segoe UI', Arial, sans-serif; }
+        /* Skrytá šablona pro PDF */
+        #pdf-template { display: none; background: white; color: black; padding: 30px; font-family: Arial, sans-serif; }
         #pdf-template h1 { color: #c92a35; border-bottom: 2px solid #c92a35; padding-bottom: 10px; margin-top: 0; }
-        #pdf-template table { width: 100%; margin-top: 20px; color: black; }
-        #pdf-template th { background: #f2f2f2; color: black; border-bottom: 2px solid #ccb; font-weight: bold; }
-        #pdf-template td { border-bottom: 1px solid #ddd; color: black; padding: 10px; }
+        #pdf-template table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        #pdf-template th { background: #f2f2f2; color: black; border-bottom: 2px solid #aaa; font-weight: bold; padding: 10px; text-align: left; }
+        #pdf-template td { border-bottom: 1px solid #ddd; color: black; padding: 10px; text-align: left; }
     </style>
 </head>
 <body>
@@ -106,9 +109,9 @@
 
         <div id="verification-section" class="verification-panel">
             <h3>🏁 Uzamčená směna - Potvrzení docházky na konci směny</h3>
-            <p style="font-size: 0.9em; color: #aaa;">Zde můžete lidi, kteří nakonec neodsloužili celou směnu, smazat pomocí křížku před finálním zápisem čárek.</p>
+            <p style="font-size: 0.9em; color: #aaa;">Zde můžete lidi, kteří nakonec neodsloužili celou směnu, smazat pomocí křížku před finálním připsáním čárek do systému.</p>
             <div id="verification-list"></div>
-            <button type="button" class="success-btn" onclick="finalizeShiftCount()">✔️ POTVRDIT ÚČAST VŠECH (ZAPIS ČÁREK)</button>
+            <button type="button" class="success-btn" onclick="finalizeShiftCount()">✔️ POTVRDIT ÚČAST VŠECH (ZÁPIS ČÁREK DO DB)</button>
         </div>
     </div>
 
@@ -134,7 +137,7 @@
 </div>
 
 <div id="pdf-template">
-    <h1 id="pdf-title">DENNÍ ROZKAZ - SMĚNA</h1>
+    <h1 id="pdf-title">DENNÍ ROZKAZ - OBSAZENÍ SMĚNY</h1>
     <h3 id="pdf-date">Datum: </h3>
     <table>
         <thead>
@@ -165,12 +168,12 @@
 
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
 
-// Zobecněné názvy techniky bez konkrétních značek
+// Zobecněné názvy techniky bez specifických typů a značek
 const VEHICLES = [
     {name:'1. výjezd', roles:['S','V','any','any']},
     {name:'2. výjezd', roles:['V','S','any','any','any','any']},
@@ -186,7 +189,7 @@ const VEHICLES = [
 const RANKS = ['plk.','pplk.','mjr.','kpt.','npor.','por.','ppor.','nprap.','prap.','pprap.','nstržm.','stržm.','rtn.'];
 
 let members = [];
-let activeShiftMembers = []; // Lidé aktuálně zařazení do rozkazu k potvrzení
+let activeShiftMembers = []; 
 
 function init(){
     document.getElementById('reg-rank').innerHTML = RANKS.map(r=>`<option value="${r}">${r}</option>`).join('');
@@ -220,26 +223,26 @@ function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
         const role = input.dataset.role;
-        const listId = 'list-' + input.id.replace('input-', '');
-        const list = document.getElementById(listId);
+        const baseId = input.id.substring(6); // Odřízne 'input-'
+        const list = document.getElementById('list-' + baseId);
 
         input.addEventListener('focus', () => {
-            fillSuggestions(list, role, '');
+            fillSuggestions(list, role, '', baseId);
             list.classList.add('show');
         });
 
         input.addEventListener('input', (e) => {
-            fillSuggestions(list, role, e.target.value.toLowerCase());
+            fillSuggestions(list, role, e.target.value.toLowerCase(), baseId);
             list.classList.add('show');
         });
 
         input.addEventListener('blur', () => {
-            setTimeout(() => list.classList.remove('show'), 150);
+            setTimeout(() => list.classList.remove('show'), 200);
         });
     });
 }
 
-function fillSuggestions(listElement, role, filterText){
+function fillSuggestions(listElement, role, filterText, baseId){
     listElement.innerHTML = '';
     
     const filtered = members.filter(m => {
@@ -251,7 +254,7 @@ function fillSuggestions(listElement, role, filterText){
     filtered.sort((a,b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
 
     if(filtered.length === 0){
-        const div = document.createElement('div');
+        const div = document.createElement('li');
         div.className = 'suggestion-item';
         div.style.cursor = 'default';
         div.style.color = '#888';
@@ -259,27 +262,30 @@ function fillSuggestions(listElement, role, filterText){
         listElement.appendChild(div);
     } else {
         filtered.forEach(m => {
-            const div = document.createElement('div');
+            const div = document.createElement('li');
             div.className = 'suggestion-item';
             div.innerHTML = `<span class="rank-badge">${m.rank}</span> ${m.last_name} ${m.first_name}`;
             
             div.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                selectMember(m.id, `${m.rank} ${m.last_name} ${m.first_name}`, listElement.id.replace('list-',''));
+                selectMember(m.id, `${m.rank} ${m.last_name} ${m.first_name}`, baseId);
             });
             listElement.appendChild(div);
         });
     }
 }
 
+// Přiřazeno globálně do window, aby ji mohl mousedown bezpečně volat
 window.selectMember = function(id, nameText, baseId) {
     const input = document.getElementById('input-' + baseId);
     const hidden = document.getElementById('hidden-' + baseId);
     const list = document.getElementById('list-' + baseId);
 
-    input.value = nameText;
-    hidden.value = id;
-    list.classList.remove('show');
+    if (input && hidden && list) {
+        input.value = nameText;
+        hidden.value = id;
+        list.classList.remove('show');
+    }
 }
 
 async function loadData(){
@@ -307,7 +313,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- LOGIKA PDF A DVOUFÁZOVÉHO ZÁPISU ---
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF ---
 
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
@@ -318,9 +324,10 @@ function processShiftInit() {
         const id = hidden.value;
         const vehName = hidden.dataset.veh;
         const roleText = hidden.dataset.roleText;
-        const textInput = document.getElementById('input-' + hidden.id.replace('hidden-', ''));
+        const baseId = hidden.id.substring(7); // Odřízne 'hidden-'
+        const textInput = document.getElementById('input-' + baseId);
 
-        if (id && textInput.value) {
+        if (id && textInput && textInput.value) {
             const memberObj = members.find(m => String(m.id) === String(id));
             if (memberObj) {
                 activeShiftMembers.push({
@@ -343,16 +350,16 @@ function processShiftInit() {
         return alert("Nikdo nebyl do směny vybrán!");
     }
 
-    // 1. Vygenerovat PDF na pozadí a stáhnout ho
+    // 1. Generování čistého PDF
     const dnešníDatum = new Date().toLocaleDateString('cs-CZ');
     document.getElementById('pdf-date').innerText = "Datum: " + dnešníDatum;
     document.getElementById('pdf-table-body').innerHTML = pdfRows.join('');
     
     const element = document.getElementById('pdf-template');
-    element.style.display = 'block'; // Dočasně zviditelnit pro knihovnu
+    element.style.display = 'block'; 
 
     const opt = {
-        margin:       10,
+        margin:       12,
         filename:     `Smenovnice_${dnešníDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, logging: false },
@@ -360,19 +367,20 @@ function processShiftInit() {
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
-        element.style.display = 'none'; // Opět skrýt
+        element.style.display = 'none'; 
     });
 
-    // 2. Odemknout panel pro verifikaci na konci směny (čárky se zatím nepřičetly!)
+    // 2. Odemknout spodní schvalovací panel (databáze se zatím nemění)
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    alert("Směna byla lokálně uložena a PDF staženo. Na konci směny potvrďte docházku níže.");
+    alert("Směna sestavena a PDF staženo! Docházku příslušníků potvrďte/upravte dole na stránce na konci směny.");
 }
 
 function renderVerificationList() {
     const container = document.getElementById('verification-list');
-    // Odstranění duplicit, pokud byl někdo zapsán na více pozicích
+    
+    // Smazat duplicity příslušníků, pokud slouží na více funkcích
     const uniqueMembers = [];
     const map = new Map();
     for (const item of activeShiftMembers) {
@@ -383,15 +391,15 @@ function renderVerificationList() {
     }
     activeShiftMembers = uniqueMembers;
 
-    container.innerHTML = activeShiftMembers.map((m, index) => `
+    container.innerHTML = activeShiftMembers.map(m => `
         <div class="verif-row" id="verif-m-${m.id}">
             <span>👤 ${m.fullname}</span>
-            <button class="small-btn" style="background:#e63946;" onclick="removeFromVerification('${m.id}')">❌ Odebrat ze směny</button>
+            <button type="button" class="small-btn" style="background:#e63946;" onclick="removeFromVerification('${m.id}')">❌ Odebrat</button>
         </div>
     `).join('');
 }
 
-function removeFromVerification(id) {
+window.removeFromVerification = function(id) {
     activeShiftMembers = activeShiftMembers.filter(m => String(m.id) !== String(id));
     const el = document.getElementById(`verif-m-${id}`);
     if(el) el.remove();
@@ -413,13 +421,13 @@ async function finalizeShiftCount() {
                 .update({ shift_count: (m.shift_count || 0) + 1, last_shift: date })
                 .eq('id', m.id);
             if (!error) successCount++;
-            else console.error("Chyba při zápisu:", error);
+            else console.error("Chyba zápisu do Supabase:", error);
         }
     }
 
-    alert(`Úspěšně potvrzeno! Čárka byla připsána ${successCount} příslušníkům.`);
+    alert(`Zápis dokončen! Čárka byla úspěšně připsána ${successCount} příslušníkům.`);
     
-    // Reset formuláře i ověřovacího okna
+    // Kompletní vyčištění formuláře
     document.querySelectorAll('.search-input').forEach(i => i.value = '');
     document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
     document.getElementById('verification-section').style.display = 'none';
@@ -427,15 +435,23 @@ async function finalizeShiftCount() {
     loadData();
 }
 
-// --- ZBYTEK FUNKCÍ BEZ ZMĚN ---
+// --- ZBYTEK FUNKCÍ PRO SPRÁVU DATABÁZE ---
 
 async function registerMember(){
     const fn = document.getElementById('reg-fname').value.trim();
     const ln = document.getElementById('reg-lname').value.trim();
     const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
-    if(!fn||!ln) return alert("Chybí jméno!");
-    const { error } = await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
-    if(error) return alert("Chyba: "+error.message);
+    if(!fn||!ln) return alert("Chybí jméno nebo příjmení!");
+    
+    const { error } = await _db.from('members').insert({ 
+        first_name: fn, 
+        last_name: ln, 
+        rank: document.getElementById('reg-rank').value, 
+        courses: crs, 
+        shift_count: 0 
+    });
+    
+    if(error) return alert("Chyba při registraci: "+error.message);
     alert("Člen úspěšně registrován!");
     document.getElementById('reg-fname').value='';
     document.getElementById('reg-lname').value='';
@@ -450,7 +466,7 @@ function switchTab(e,id){
     e.currentTarget.classList.add('active');
 }
 
-function openEdit(id){
+window.openEdit = function(id){
     const m = members.find(x=>String(x.id)===String(id));
     if(!m) return;
     document.getElementById('edit-id').value = m.id;
@@ -472,21 +488,22 @@ async function saveEdit(){
     const rank = document.getElementById('edit-rank').value;
     const count = parseInt(document.getElementById('edit-count').value)||0;
     const courses = Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(i=>i.value);
+    
     const { error } = await _db.from('members').update({ rank, shift_count:count, courses }).eq('id',id);
-    if(error) return alert("Chyba: "+error.message);
+    if(error) return alert("Chyba uložení: "+error.message);
     closeEdit();
     loadData();
 }
 
-async function deleteMember(id){
-    if(!confirm("Opravdu chceš smazat tohoto člena?")) return;
+window.deleteMember = async function(id){
+    if(!confirm("Opravdu chcete smazat tohoto člena?")) return;
     const { error } = await _db.from('members').delete().eq('id', id);
     if(error) return alert("Chyba mazání: "+error.message);
     alert("Člen byl smazán!");
     loadData();
 }
 
-function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+window.closeEdit = function(){ document.getElementById('edit-modal').style.display='none'; }
 
 document.getElementById('date-display').innerText = new Date().toLocaleDateString('cs-CZ');
 init();
