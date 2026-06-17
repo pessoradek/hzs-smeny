@@ -16,6 +16,12 @@
         .tab-btn.active { background:var(--accent); font-weight:bold; }
         .section { display:none; background:var(--panel); padding:20px; border-radius:8px; border:1px solid var(--border); }
         .section.active { display:block; }
+        
+        /* Parametry směny (Místo a Čas) */
+        .shift-meta-panel { display: flex; flex-wrap: wrap; gap: 15px; background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .meta-group { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 5px; }
+        .meta-group label { font-size: 0.85em; font-weight: bold; color: var(--accent); }
+
         .grid-layout { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:15px; }
         .vehicle-card { background:#333; border:1px solid var(--border); padding:15px; border-radius:5px; border-left:5px solid var(--accent); position:relative; }
         .vehicle-card h3 { margin:0 0 15px 0; color:var(--accent); font-size:1.1em; border-bottom:1px solid #444; padding-bottom:5px; }
@@ -73,7 +79,6 @@
         }
         .suggestion-item:hover { background: var(--accent); color: white; }
         .suggestion-item .rank-badge { font-weight: bold; color: var(--accent); margin-right: 5px; }
-        .suggestion-item:hover .rank-badge { color: white; }
 
         #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--panel); padding:25px; border-radius:8px; width:90%; max-width:450px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); }
@@ -82,12 +87,26 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* Skrytá šablona pro PDF */
-        #pdf-template { display: none; background: white; color: black; padding: 30px; font-family: Arial, sans-serif; }
-        #pdf-template h1 { color: #c92a35; border-bottom: 2px solid #c92a35; padding-bottom: 10px; margin-top: 0; }
-        #pdf-template table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        #pdf-template th { background: #f2f2f2; color: black; border-bottom: 2px solid #aaa; font-weight: bold; padding: 10px; text-align: left; }
-        #pdf-template td { border-bottom: 1px solid #ddd; color: black; padding: 10px; text-align: left; }
+        /* Stylování kontejneru pro export do PDF (vystředěný A4 layout) */
+        #pdf-export-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 190mm; /* Šířka obsahu pro html2pdf */
+        }
+        .pdf-page {
+            background: white;
+            color: black;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .pdf-header { border-bottom: 3px solid #c92a35; padding-bottom: 12px; margin-bottom: 20px; }
+        .pdf-header h1 { color: #c92a35; margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; }
+        .pdf-meta-info { display: flex; justify-content: space-between; font-size: 14px; color: #444; margin-top: 10px; background: #f9f9f9; padding: 8px; border-radius: 4px; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .pdf-table th { background: #e1e1e1; color: black; border: 1px solid #bbb; font-weight: bold; padding: 10px; text-align: left; font-size: 13px; }
+        .pdf-table td { border: 1px solid #ddd; color: black; padding: 9px; text-align: left; font-size: 13px; }
+        .pdf-table tr:nth-child(even) { background: #fcfcfc; }
     </style>
 </head>
 <body>
@@ -102,7 +121,24 @@
 
     <div id="rozkaz" class="section active">
         <h2 id="date-display"></h2>
+        
         <form id="shiftForm">
+            <div class="shift-meta-panel">
+                <div class="meta-group">
+                    <label for="shift-location">Stanice / Místo:</label>
+                    <select id="shift-location" onchange="toggleCustomLocation(this.value)">
+                        <option value="Vranovice (Sandy Shores)">Vranovice (Sandy Shores)</option>
+                        <option value="Orlice (Los Santos)">Orlice (Los Santos)</option>
+                        <option value="custom">-- Vlastní místo --</option>
+                    </select>
+                    <input type="text" id="shift-location-custom" placeholder="Napište vlastní lokalitu..." style="display:none; margin-top:5px;">
+                </div>
+                <div class="meta-group">
+                    <label for="shift-time">Čas / Trvání směny:</label>
+                    <input type="text" id="shift-time" placeholder="např. 08:00 - 20:00, nebo 24h" value="24h">
+                </div>
+            </div>
+
             <div class="grid-layout" id="vehicles-container"></div>
             <button type="button" class="action-btn" onclick="processShiftInit()">💾 ZAPSAT A STÁHNOUT PDF</button>
         </form>
@@ -136,19 +172,27 @@
     </div>
 </div>
 
-<div id="pdf-template">
-    <h1 id="pdf-title">DENNÍ ROZKAZ - OBSAZENÍ SMĚNY</h1>
-    <h3 id="pdf-date">Datum: </h3>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 40%;">Technika / Postavení</th>
-                <th style="width: 25%;">Funkce</th>
-                <th style="width: 35%;">Příslušník</th>
-            </tr>
-        </thead>
-        <tbody id="pdf-table-body"></tbody>
-    </table>
+<div id="pdf-export-container">
+    <div id="pdf-actual-content" class="pdf-page">
+        <div class="pdf-header">
+            <h1>Denní rozkaz - Obsazení směny</h1>
+            <div class="pdf-meta-info">
+                <span><b>Datum:</b> <span id="pdf-out-date"></span></span>
+                <span><b>Místo:</b> <span id="pdf-out-location"></span></span>
+                <span><b>Čas:</b> <span id="pdf-out-time"></span></span>
+            </div>
+        </div>
+        <table class="pdf-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Technika / Zařazení</th>
+                    <th style="width: 25%;">Funkce</th>
+                    <th style="width: 40%;">Příslušník</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body"></tbody>
+        </table>
+    </div>
 </div>
 
 <div id="edit-modal">
@@ -168,12 +212,11 @@
 
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
 
-// Zobecněné názvy techniky bez specifických typů a značek
 const VEHICLES = [
     {name:'1. výjezd', roles:['S','V','any','any']},
     {name:'2. výjezd', roles:['V','S','any','any','any','any']},
@@ -219,11 +262,16 @@ function init(){
     loadData();
 }
 
+function toggleCustomLocation(val) {
+    const customInput = document.getElementById('shift-location-custom');
+    customInput.style.display = (val === 'custom') ? 'block' : 'none';
+}
+
 function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
         const role = input.dataset.role;
-        const baseId = input.id.substring(6); // Odřízne 'input-'
+        const baseId = input.id.substring(6); 
         const list = document.getElementById('list-' + baseId);
 
         input.addEventListener('focus', () => {
@@ -275,7 +323,6 @@ function fillSuggestions(listElement, role, filterText, baseId){
     }
 }
 
-// Přiřazeno globálně do window, aby ji mohl mousedown bezpečně volat
 window.selectMember = function(id, nameText, baseId) {
     const input = document.getElementById('input-' + baseId);
     const hidden = document.getElementById('hidden-' + baseId);
@@ -313,18 +360,18 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF ---
+// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + OPRAVENÉ PDF ---
 
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
-    const pdfRows = [];
+    let htmlRows = '';
 
     hiddenInputs.forEach(hidden => {
         const id = hidden.value;
         const vehName = hidden.dataset.veh;
         const roleText = hidden.dataset.roleText;
-        const baseId = hidden.id.substring(7); // Odřízne 'hidden-'
+        const baseId = hidden.id.substring(7); 
         const textInput = document.getElementById('input-' + baseId);
 
         if (id && textInput && textInput.value) {
@@ -335,13 +382,14 @@ function processShiftInit() {
                     fullname: `${memberObj.rank} ${memberObj.last_name} ${memberObj.first_name}`
                 });
                 
-                pdfRows.push(`
+                // Generování řádku čistě textově pro zachování obsahu v html2pdf
+                htmlRows += `
                     <tr>
                         <td><b>${vehName}</b></td>
                         <td>${roleText}</td>
                         <td>${memberObj.rank} ${memberObj.last_name} ${memberObj.first_name}</td>
                     </tr>
-                `);
+                `;
             }
         }
     });
@@ -350,37 +398,48 @@ function processShiftInit() {
         return alert("Nikdo nebyl do směny vybrán!");
     }
 
-    // 1. Generování čistého PDF
+    // Určení správného místa směny
+    let lokalita = document.getElementById('shift-location').value;
+    if (lokalita === 'custom') {
+        lokalita = document.getElementById('shift-location-custom').value.trim() || 'Nespecifikováno';
+    }
+    const casSměny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
     const dnešníDatum = new Date().toLocaleDateString('cs-CZ');
-    document.getElementById('pdf-date').innerText = "Datum: " + dnešníDatum;
-    document.getElementById('pdf-table-body').innerHTML = pdfRows.join('');
+
+    // Vložení textu přímo do DOM před zachycením knihovnou
+    document.getElementById('pdf-out-date').innerText = dnešníDatum;
+    document.getElementById('pdf-out-location').innerText = lokalita;
+    document.getElementById('pdf-out-time').innerText = casSměny;
+    document.getElementById('pdf-table-body').innerHTML = htmlRows;
     
-    const element = document.getElementById('pdf-template');
-    element.style.display = 'block'; 
+    // Načtení elementu pro export
+    const element = document.getElementById('pdf-actual-content');
 
     const opt = {
-        margin:       12,
+        margin:       15,
         filename:     `Smenovnice_${dnešníDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false },
+        html2canvas:  { scale: 2, logging: false, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    // Spuštění bezpečné konverze viditelného fragmentu
     html2pdf().set(opt).from(element).save().then(() => {
-        element.style.display = 'none'; 
+        // Po úspěšném stažení uvolníme paměť z tabulky
+        console.log("PDF úspěšně uloženo.");
     });
 
-    // 2. Odemknout spodní schvalovací panel (databáze se zatím nemění)
+    // 2. Odemknout spodní schvalovací panel docházky
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    alert("Směna sestavena a PDF staženo! Docházku příslušníků potvrďte/upravte dole na stránce na konci směny.");
+    alert("Směna sestavena a PDF staženo! Docházku potvrďte dole na stránce na konci směny.");
 }
 
 function renderVerificationList() {
     const container = document.getElementById('verification-list');
     
-    // Smazat duplicity příslušníků, pokud slouží na více funkcích
+    // Filtrace duplicit
     const uniqueMembers = [];
     const map = new Map();
     for (const item of activeShiftMembers) {
@@ -427,15 +486,19 @@ async function finalizeShiftCount() {
 
     alert(`Zápis dokončen! Čárka byla úspěšně připsána ${successCount} příslušníkům.`);
     
-    // Kompletní vyčištění formuláře
+    // Reset prvků
     document.querySelectorAll('.search-input').forEach(i => i.value = '');
     document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
+    document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
+    document.getElementById('shift-location-custom').style.display = 'none';
+    document.getElementById('shift-location-custom').value = '';
+    document.getElementById('shift-time').value = '24h';
     document.getElementById('verification-section').style.display = 'none';
     activeShiftMembers = [];
     loadData();
 }
 
-// --- ZBYTEK FUNKCÍ PRO SPRÁVU DATABÁZE ---
+// --- SPRÁVA DATABÁZE ---
 
 async function registerMember(){
     const fn = document.getElementById('reg-fname').value.trim();
