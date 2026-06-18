@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HZS Směnovnice</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --bg:#1a1a1a; --text:#e0e0e0; --accent:#e63946; --panel:#2d2d2d; --border:#444; --input-bg:#222; --success:#2a9d8f; }
         body { font-family:'Segoe UI', sans-serif; background:var(--bg); color:var(--text); padding:20px; margin:0; }
@@ -80,8 +80,9 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 190mm; background: #ffffff !important; }
-        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 15px; box-sizing: border-box; font-size: 12px; }
+        /* Nastavení šířky pro čistý export obrázku */
+        #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 800px; background: #ffffff !important; }
+        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 25px; box-sizing: border-box; font-size: 13px; }
         .pdf-vehicles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 10px; }
     </style>
 </head>
@@ -123,7 +124,7 @@
             </div>
 
             <div class="grid-layout" id="vehicles-container"></div>
-            <button type="button" class="action-btn" onclick="processShiftInit()">💾 ZAPSAT A STÁHNOUT PDF</button>
+            <button type="button" class="action-btn" onclick="processShiftInit()">📸 ZAPSAT A STÁHNOUT OBRÁZEK PRO DISCORD</button>
         </form>
 
         <div id="verification-section" class="verification-panel">
@@ -179,31 +180,31 @@
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
         <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:10px;margin-bottom:15px;">
-            <h1 style="margin:0;color:#c92a35;font-size:24px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
-            <h2 style="margin:3px 0;color:#000000;font-size:16px;">DENNÍ ROZKAZ SMĚNY</h2>
+            <h1 style="margin:0;color:#c92a35;font-size:26px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
+            <h2 style="margin:3px 0;color:#000000;font-size:18px;">DENNÍ ROZKAZ SMĚNY</h2>
             <div style="font-size:11px;color:#666;">Evidenční číslo: <span id="pdf-order-id"></span></div>
         </div>
 
-        <table style="width:100%;margin-bottom:15px;border-collapse:collapse;color:#000000;font-size:12px;">
+        <table style="width:100%;margin-bottom:15px;border-collapse:collapse;color:#000000;font-size:13px;">
             <tr>
-                <td><b>Datum:</b> <span id="pdf-out-date"></span></td>
-                <td><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
+                <td style="padding:4px 0;"><b>Datum:</b> <span id="pdf-out-date"></span></td>
+                <td style="padding:4px 0;"><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
             </tr>
             <tr>
-                <td><b>Stanice:</b> <span id="pdf-out-location"></span></td>
-                <td><b>Velitel směny:</b> <span id="pdf-out-leader"></span></td>
+                <td style="padding:4px 0;"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
+                <td style="padding:4px 0;"><b>Velitel směny:</b> <span id="pdf-out-leader"></span></td>
             </tr>
         </table>
 
-        <div style="background:#f2f2f2;padding:6px;border-left:4px solid #c92a35;margin-bottom:10px;color:black;font-weight:bold;font-size:12px;">
+        <div style="background:#f2f2f2;padding:8px;border-left:4px solid #c92a35;margin-bottom:12px;color:black;font-weight:bold;font-size:13px;">
             Rozdělení příslušníků a techniky pro výkon služby
         </div>
 
-        <h3 style="color:#000000;margin:10px 0 5px 0;font-size:14px;">Osádky vozidel</h3>
+        <h3 style="color:#000000;margin:10px 0 5px 0;font-size:15px;">Osádky vozidel</h3>
         
         <div id="pdf-vehicle-groups" class="pdf-vehicles-grid"></div>
 
-        <table style="width:100%;margin-top:40px;color:#000000;font-size:11px;">
+        <table style="width:100%;margin-top:35px;color:#000000;font-size:12px;">
             <tr>
                 <td style="width:50%;"></td>
                 <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
@@ -215,7 +216,7 @@
     
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
@@ -420,7 +421,7 @@ function processShiftInit() {
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-        <table style="width:100%; border-collapse:collapse; margin-bottom:5px; color:#000000; font-size:11px; page-break-inside: avoid;">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:5px; color:#000000; font-size:11px;">
         <tr>
             <th colspan="2" style="background:#c92a35; color:white; padding:5px; text-align:left; font-size:11px; font-weight:bold;">
                 ${vehicle}
@@ -440,30 +441,38 @@ function processShiftInit() {
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
-    const element = document.getElementById('pdf-actual-content');
-    const opt = {
-        margin:       10,
-        filename:     `Smenovnice_${dnyDatum.replace(/\s/g, '')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2, 
-            logging: false, 
-            useCORS: true, 
-            backgroundColor: '#ffffff',
-            scrollY: 0,
-            scrollX: 0
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+    // Generování OBRÁZKU pomocí HTML2CANVAS
+    const element = document.getElementById('pdf-export-container');
+    
+    // Dočasně zviditelníme kontejner pro vyfocení, aby byl správně vyrenderován
+    element.style.position = 'static';
+    element.style.left = '0';
 
-    html2pdf().set(opt).from(element).save().catch(err => {
-        console.error("Chyba při exportu PDF: ", err);
+    html2canvas(document.getElementById('pdf-actual-content'), {
+        scale: 2, // Vysoká kvalita obrázku
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true
+    }).then(canvas => {
+        // Schováme kontejner zpět
+        element.style.position = 'fixed';
+        element.style.left = '-9999px';
+
+        // Vytvoříme odkaz ke stažení obrázku
+        const link = document.createElement('a');
+        link.download = `Smenovnice_${dnyDatum.replace(/\s/g, '')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(err => {
+        console.error("Chyba při exportu obrázku: ", err);
+        element.style.position = 'fixed';
+        element.style.left = '-9999px';
     });
 
     renderVerificationList();
     document.getElementById('verification-section').style.display = 'block';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    alert("Směna sestavena a PDF staženo!");
+    alert("Směna sestavena a obrázek (.png) stažen!");
 }
 
 function renderVerificationList() {
