@@ -409,24 +409,37 @@ function processShiftInit() {
 
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
-        pdfHtml += `
-        <table style="width:100%; border-collapse:collapse; margin-bottom:15px; color:#000000;">
-        <tr>
-            <th colspan="2" style="background:#c92a35; color:white; padding:4px; text-align:left;">
-                ${vehicle}
-            </th>
-        </tr>
-        `;
-        crew.forEach(person => {
-            pdfHtml += `
-            <tr>
-                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">${person.role}</td>
-                <td style="border:1px solid #ccc; padding:6px;">${person.member}</td>
-            </tr>
-            `;
-        });
-        pdfHtml += `</table>`;
-    });
+pdfHtml += `
+<div style="
+border:1px solid #ccc;
+margin-bottom:8px;
+">
+
+<div style="
+background:#c92a35;
+color:white;
+padding:4px;
+font-weight:bold;
+">
+${vehicle}
+</div>
+`;
+
+crew.forEach(person => {
+    pdfHtml += `
+    <div style="
+    display:flex;
+    justify-content:space-between;
+    padding:2px 6px;
+    border-bottom:1px solid #ddd;
+    ">
+        <span>${person.role}</span>
+        <span>${person.member}</span>
+    </div>
+    `;
+});
+
+pdfHtml += `</div>`;
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
