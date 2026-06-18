@@ -80,7 +80,7 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* ZMĚNA ZDE: Fixní pozice na pozadí zabrání chybám při scrollování stránky */
+        /* FIX SOUŘADNIC PRO UKONČENÍ MEZER A MIZENÍ OBSAHU */
         #pdf-export-container { position: fixed; left: 0; top: 0; width: 190mm; z-index: -9999; background: #ffffff !important; pointer-events: none; }
         .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 15px; box-sizing: border-box; }
     </style>
@@ -353,6 +353,7 @@ function renderTable(){
     `).join('');
 }
 
+// --- ZCELA OPRAVENÉ GENEROVÁNÍ PDF S FIXNÍM SCROLLEM ---
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
@@ -436,7 +437,7 @@ function processShiftInit() {
             logging: false, 
             useCORS: true, 
             backgroundColor: '#ffffff',
-            scrollY: 0, /* ZMĚNA ZDE: Vynutí snímání od absolutního vršku elementu bez ohledu na scroll */
+            scrollY: 0, // Vynutí zachycení od absolutního vršku elementu
             scrollX: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -461,4 +462,113 @@ function renderVerificationList() {
             uniqueMembers.push(item);
         }
     }
-    activeShiftMembers = uniqueMembers
+    activeShiftMembers = uniqueMembers;
+
+    container.innerHTML = activeShiftMembers.map(m => `
+        <div class="verif-row" id="verif-m-${m.id}">
+            <span>👤 ${m.fullname}</span>
+            <button type="button" class="small-btn" style="background:#e63946;" onclick="removeFromVerification('${m.id}')">❌ Odebrat</button>
+        </div>
+    `).join('');
+}
+
+window.removeFromVerification = function(id) {
+    activeShiftMembers = activeShiftMembers.filter(m => String(m.id) !== String(id));
+    const el = document.getElementById(`verif-m-${id}`);
+    if(el) el.remove();
+    if(activeShiftMembers.length === 0) {
+        document.getElementById('verification-section').style.display = 'none';
+    }
+}
+
+async function finalizeShiftCount() {
+    if (activeShiftMembers.length === 0) return alert("Seznam členů k zapsání je prázdný.");
+    const date = new Date().toISOString().split('T')[0];
+    let successCount = 0;
+
+    for (let current of activeShiftMembers) {
+        const m = members.find(x => String(x.id) === String(current.id));
+        if (m) {
+            const { error } = await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', m.id);
+            if (!error) successCount++;
+        }
+    }
+
+    alert(`Zápis dokončen! Čárka byla připsána ${successCount} příslušníkům.`);
+    
+    document.querySelectorAll('.search-input').forEach(i => i.value = '');
+    document.querySelectorAll('.hidden-member-id').forEach(i => i.value = '');
+    document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
+    document.getElementById('shift-location-custom').style.display = 'none';
+    document.getElementById('shift-time').value = '19:00';
+    document.getElementById('verification-section').style.display = 'none';
+    activeShiftMembers = [];
+    loadData();
+}
+
+async function registerMember(){
+    const fn = document.getElementById('reg-fname').value.trim();
+    const ln = document.getElementById('reg-lname').value.trim();
+    const crs = Array.from(document.querySelectorAll('#reg-courses input:checked')).map(c=>c.value);
+    if(!fn||!ln) return alert("Chybí jméno nebo příjmení!");
+    
+    const { error } = await _db.from('members').insert({ first_name: fn, last_name: ln, rank: document.getElementById('reg-rank').value, courses: crs, shift_count: 0 });
+    if(error) return alert("Chyba při registraci: "+error.message);
+    alert("Člen úspěšně registrován!");
+    document.getElementById('reg-fname').value='';
+    document.getElementById('reg-lname').value='';
+    document.querySelectorAll('#reg-courses input').forEach(i=>i.checked=false);
+    loadData();
+}
+
+function switchTab(e,id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    e.currentTarget.classList.add('active');
+}
+
+window.openEdit = function(id){
+    const m = members.find(x=>String(x.id)===String(id));
+    if(!m) return;
+    document.getElementById('edit-id').value = m.id;
+    document.getElementById('edit-name').innerText = `Upravit ${m.first_name} ${m.last_name}`;
+    document.getElementById('edit-count').value = m.shift_count || 0;
+    
+    const rankSelect = document.getElementById('edit-rank');
+    rankSelect.innerHTML = RANKS.map(r=>`<option value="${r}">${r}</option>`).join('');
+    rankSelect.value = m.rank;
+    
+    const div = document.getElementById('edit-courses-div');
+    div.innerHTML = ALL_COURSES.map(c=>`<label><input type="checkbox" value="${c}" ${m.courses&&m.courses.includes(c)?'checked':''}><span>${c}</span></label>`).join('');
+    
+    document.getElementById('edit-modal').style.display='flex';
+}
+
+async function saveEdit(){
+    const id = document.getElementById('edit-id').value;
+    const rank = document.getElementById('edit-rank').value;
+    const count = parseInt(document.getElementById('edit-count').value)||0;
+    const courses = Array.from(document.querySelectorAll('#edit-courses-div input:checked')).map(i=>i.value);
+    
+    const { error } = await _db.from('members').update({ rank, shift_count:count, courses }).eq('id',id);
+    if(error) return alert("Chyba uložení: "+error.message);
+    closeEdit();
+    loadData();
+}
+
+window.deleteMember = async function(id){
+    if(!confirm("Opravdu chcete smazat tohoto člena?")) return;
+    const { error } = await _db.from('members').delete().eq('id', id);
+    if(error) return alert("Chyba mazání: "+error.message);
+    alert("Člen byl smazán!");
+    loadData();
+}
+
+window.closeEdit = function(){ document.getElementById('edit-modal').style.display='none'; }
+
+document.getElementById('date-display').innerText = new Date().toLocaleDateString('cs-CZ');
+init();
+</script>
+</body>
+</html>
