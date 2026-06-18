@@ -18,7 +18,7 @@
         .section.active { display:block; }
         
         .shift-meta-panel { display: flex; flex-wrap: wrap; gap: 15px; background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .meta-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
+        .meta-group { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 5px; }
         .meta-group label { font-size: 0.85em; font-weight: bold; color: var(--accent); }
 
         .grid-layout { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:15px; }
@@ -80,6 +80,10 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
+        /* Upozorňující vykřičník pro povýšení */
+        .promo-alert { display: inline-flex; align-items: center; justify-content: center; background: #ffb703; color: #000000; font-weight: bold; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; margin-left: 8px; cursor: help; }
+
+        /* Exportní kontejner obrázku skrytý mimo obrazovku */
         #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 800px; background: #ffffff !important; }
         .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 25px; box-sizing: border-box; font-size: 13px; }
         .pdf-vehicles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 10px; }
@@ -111,14 +115,7 @@
                 </div>
                 <div class="meta-group">
                     <label for="shift-time">Čas začátku směny:</label>
-                    <input type="text" id="shift-time" placeholder="např. 19:00" value="19:00">
-                </div>
-                <div class="meta-group">
-                    <label for="shift-leader">Velitel směny:</label>
-                    <div class="searchable-wrapper">
-                        <input type="text" id="shift-leader" class="search-input" placeholder="Jméno velitele..." autocomplete="off" data-role="any">
-                        <ul id="list-shift-leader" class="suggestions-list"></ul>
-                    </div>
+                    <input type="text" id="shift-time" placeholder="např. 19:00, 07:00 atd." value="19:00">
                 </div>
             </div>
 
@@ -190,8 +187,7 @@
                 <td style="padding:4px 0;"><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
             </tr>
             <tr>
-                <td style="padding:4px 0;"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
-                <td style="padding:4px 0;"><b>Velitel směny:</b> <span id="pdf-out-leader"></span></td>
+                <td style="padding:4px 0;" colspan="2"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
             </tr>
         </table>
 
@@ -205,7 +201,7 @@
 
         <table style="width:100%;margin-top:35px;color:#000000;font-size:12px;">
             <tr>
-                <td style="width:50%;"></td>
+                <td style="width:50%;text-align:center;">_______________________<br>Operační důstojník</td>
                 <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
             </tr>
         </table>
@@ -220,11 +216,11 @@ const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
 const VEHICLES = [
-    {name:'1. výjezd', roles:['S','V','any','any','any','any']},
+    {name:'1. výjezd', roles:['S','V','any','any']},
     {name:'2. výjezd', roles:['V','S','any','any','any','any']},
     {name:'CAS 30 Cisterna', roles:['any','any']},
     {name:'Výšková technika', roles:['any','any']},
-    {name:'Rychlý zásahový automobil', roles:['any','any','any']},
+    {name:'Rychlý zásahový automobil', roles:['any','any']},
     {name:'Velitelský automobil', roles:['any','any']},
     {name:'Sanitní vůz', roles:['any','any']},
     {name:'KOPIS (Operační)', roles:['OD','OD']},
@@ -273,16 +269,16 @@ function attachSearchListeners(){
     const inputs = document.querySelectorAll('.search-input');
     inputs.forEach(input => {
         const role = input.dataset.role;
-        const baseId = input.id.replace('input-', '').replace('shift-', ''); 
-        const list = document.getElementById('list-' + (input.id.includes('shift-') ? 'shift-' + baseId : baseId));
+        const baseId = input.id.replace('input-', ''); 
+        const list = document.getElementById('list-' + baseId);
 
         input.addEventListener('focus', () => {
-            fillSuggestions(list, role, '', input.id);
+            fillSuggestions(list, role, '', baseId);
             list.classList.add('show');
         });
 
         input.addEventListener('input', (e) => {
-            fillSuggestions(list, role, e.target.value.toLowerCase(), input.id);
+            fillSuggestions(list, role, e.target.value.toLowerCase(), baseId);
             list.classList.add('show');
         });
 
@@ -292,7 +288,7 @@ function attachSearchListeners(){
     });
 }
 
-function fillSuggestions(listElement, role, filterText, inputId){
+function fillSuggestions(listElement, role, filterText, baseId){
     listElement.innerHTML = '';
     
     const filtered = members.filter(m => {
@@ -318,26 +314,22 @@ function fillSuggestions(listElement, role, filterText, inputId){
             
             div.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                selectMember(m.id, `${m.rank} ${m.last_name} ${m.first_name}`, inputId);
+                selectMember(m.id, `${m.rank} ${m.last_name} ${m.first_name}`, baseId);
             });
             listElement.appendChild(div);
         });
     }
 }
 
-window.selectMember = function(id, nameText, inputId) {
-    const input = document.getElementById(inputId);
-    const listId = inputId.includes('shift-') ? 'list-shift-leader' : 'list-' + inputId.replace('input-', '');
-    const list = document.getElementById(listId);
+window.selectMember = function(id, nameText, baseId) {
+    const input = document.getElementById('input-' + baseId);
+    const hidden = document.getElementById('hidden-' + baseId);
+    const list = document.getElementById('list-' + baseId);
 
-    if (input) {
+    if (input && hidden && list) {
         input.value = nameText;
-        if (!inputId.includes('shift-')) {
-            const hiddenId = 'hidden-' + inputId.replace('input-', '');
-            const hidden = document.getElementById(hiddenId);
-            if (hidden) hidden.value = id;
-        }
-        if (list) list.classList.remove('show');
+        hidden.value = id;
+        list.classList.remove('show');
     }
 }
 
@@ -351,19 +343,34 @@ async function loadData(){
 function renderTable(){
     const tbody = document.querySelector('#members-table tbody');
     const sortedMembers = [...members].sort((a, b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
-    tbody.innerHTML = sortedMembers.map(m=>`
+    
+    tbody.innerHTML = sortedMembers.map(m=>{
+        const sc = m.shift_count || 0;
+        let showPromo = false;
+        
+        // Vyhodnocení podmínek pro zobrazení vykřičníku
+        if (m.rank === 'rtn.' && sc >= 5) showPromo = true;
+        if (m.rank === 'stržm.' && sc >= 10) showPromo = true;
+        if (m.rank === 'nstržm.' && sc >= 20) showPromo = true;
+        if (m.rank === 'pprap.' && sc >= 25) showPromo = true;
+        if (m.rank === 'prap.' && sc >= 30) showPromo = true;
+
+        const promoIcon = showPromo ? `<span class="promo-alert" title="Návrh na povýšení">!</span>` : '';
+
+        return `
         <tr>
-            <td>${m.rank}</td>
+            <td>${m.rank}${promoIcon}</td>
             <td>${m.first_name} ${m.last_name}</td>
             <td>${(m.courses||[]).map(c=>`<span class="course-tag">${c}</span>`).join('')}</td>
-            <td>${m.shift_count||0}</td>
+            <td>${sc}</td>
             <td>${m.last_shift || '-'}</td>
             <td>
                 <button class="small-btn" onclick="openEdit('${m.id}')">✏️</button>
                 <button class="small-btn" onclick="deleteMember('${m.id}')">❌</button>
             </td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function processShiftInit() {
@@ -405,13 +412,11 @@ function processShiftInit() {
         lokalita = document.getElementById('shift-location-custom').value.trim() || 'Nespecifikováno';
     }
     const casSmeny = document.getElementById('shift-time').value.trim() || 'Nespecifikováno';
-    const velitelSmeny = document.getElementById('shift-leader').value.trim() || 'Nespecifikováno';
     const dnyDatum = new Date().toLocaleDateString('cs-CZ');
 
     document.getElementById('pdf-out-date').innerText = dnyDatum;
     document.getElementById('pdf-out-location').innerText = lokalita;
     document.getElementById('pdf-out-time').innerText = casSmeny;
-    document.getElementById('pdf-out-leader').innerText = velitelSmeny;
     
     const now = new Date();
     document.getElementById('pdf-generated').innerText = now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ');
@@ -518,7 +523,6 @@ async function finalizeShiftCount() {
     document.getElementById('shift-location').value = 'Vranovice (Sandy Shores)';
     document.getElementById('shift-location-custom').style.display = 'none';
     document.getElementById('shift-time').value = '19:00';
-    document.getElementById('shift-leader').value = '';
     document.getElementById('verification-section').style.display = 'none';
     activeShiftMembers = [];
     loadData();
