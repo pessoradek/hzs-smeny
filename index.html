@@ -80,8 +80,9 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        #pdf-export-container { position: absolute; left: -9999px; top: -9999px; width: 190mm; background: #ffffff !important; }
-        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 20px; }
+        /* OPRAVA SOUŘADNIC PRO HTML2CANVAS SQUASH */
+        #pdf-export-container { position: fixed; left: 0; top: 0; width: 190mm; z-index: -9999; background: #ffffff !important; pointer-events: none; }
+        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 15px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -170,45 +171,42 @@
 
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
-        <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:15px;margin-bottom:20px;">
-            <h1 style="margin:0;color:#c92a35;font-size:30px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
-            <h2 style="margin:5px 0;color:#000000;">DENNÍ ROZKAZ SMĚNY</h2>
-            <div style="font-size:12px;color:#666;">Evidenční číslo: <span id="pdf-order-id"></span></div>
+        <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:12px;margin-bottom:15px;">
+            <h1 style="margin:0;color:#c92a35;font-size:26px;font-weight:bold;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
+            <h2 style="margin:5px 0;color:#000000;font-size:18px;">DENNÍ ROZKAZ SMĚNY</h2>
+            <div style="font-size:11px;color:#555;">Evidenční číslo: <span id="pdf-order-id"></span></div>
         </div>
 
-        <table style="width:100%;margin-bottom:20px;border-collapse:collapse;color:#000000;">
+        <table style="width:100%;margin-bottom:15px;border-collapse:collapse;color:#000000;font-size:13px;">
             <tr>
-                <td><b>Datum:</b> <span id="pdf-out-date"></span></td>
-                <td><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
+                <td style="padding:2px 0;"><b>Datum:</b> <span id="pdf-out-date"></span></td>
+                <td style="padding:2px 0;"><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
             </tr>
             <tr>
-                <td colspan="2"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
+                <td colspan="2" style="padding:2px 0;"><b>Stanice:</b> <span id="pdf-out-location"></span></td>
             </tr>
         </table>
 
-        <hr style="border:0;border-top:1px solid #ccc;">
-        <div style="background:#f2f2f2;padding:10px;border-left:4px solid #c92a35;margin-bottom:15px;color:black;font-weight:bold;">
+        <div style="background:#f2f2f2;padding:6px;border-left:4px solid #c92a35;margin-bottom:15px;color:black;font-weight:bold;font-size:13px;">
             Rozdělení příslušníků a techniky pro výkon služby
         </div>
 
-        <h3 style="color:#000000;">Osádky vozidel</h3>
+        <h3 style="color:#000000;font-size:14px;margin:0 0 10px 0;">Osádky vozidel</h3>
         <div id="pdf-vehicle-groups" style="color:#000000;"></div>
 
-        <br><br>
-        <table style="width:100%;margin-top:40px;color:#000000;">
+        <table style="width:100%;margin-top:30px;color:#000000;font-size:13px;page-break-inside:avoid;">
             <tr>
                 <td style="width:50%;text-align:center;">_______________________<br>Operační důstojník</td>
                 <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
             </tr>
         </table>
-        <br><br>
-        <div style="font-size:12px;color:#555;text-align:center;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
+        <div style="font-size:10px;color:#777;text-align:center;margin-top:20px;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
     </div>
 </div>
     
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
@@ -355,7 +353,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- DVOUFÁZOVÝ ZÁPIS SMĚNY + PDF (ZCELA OPRAVENO) ---
+// --- OPRAVENÉ GENEROVÁNÍ PDF NA JEDNU STRÁNKU BEZ MEZER ---
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
@@ -408,22 +406,23 @@ function processShiftInit() {
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-        <table style="width:100%; border-collapse:collapse; margin-bottom:15px; color:#000000;">
-        <tr>
-            <th colspan="2" style="background:#c92a35; color:white; padding:8px; text-align:left;">
-                ${vehicle}
-            </th>
-        </tr>
+        <div style="margin-bottom:10px; page-break-inside:avoid;">
+            <table style="width:100%; border-collapse:collapse; color:#000000; font-size:12px;">
+            <tr>
+                <th colspan="2" style="background:#c92a35; color:white; padding:5px; text-align:left; font-size:13px; font-weight:bold;">
+                    ${vehicle}
+                </th>
+            </tr>
         `;
         crew.forEach(person => {
             pdfHtml += `
             <tr>
-                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">${person.role}</td>
-                <td style="border:1px solid #ccc; padding:6px;">${person.member}</td>
+                <td style="border:1px solid #ccc; padding:4px; width:35%; font-weight:bold;">${person.role}</td>
+                <td style="border:1px solid #ccc; padding:4px;">${person.member}</td>
             </tr>
             `;
         });
-        pdfHtml += `</table>`;
+        pdfHtml += `</table></div>`;
     });
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
@@ -433,18 +432,24 @@ function processShiftInit() {
         margin:       10,
         filename:     `Smenovnice_${dnyDatum.replace(/\s/g, '')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas:  { 
+            scale: 2, 
+            logging: false, 
+            useCORS: true, 
+            backgroundColor: '#ffffff',
+            scrollY: 0, // Vynucení nulového scrollu vymaže horní mezeru
+            scrollX: 0
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save().catch(err => {
+    html2pdf().set(opt).from(element).save().then(() => {
+        renderVerificationList();
+        document.getElementById('verification-section').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }).catch(err => {
         console.error("Chyba při exportu PDF: ", err);
     });
-
-    renderVerificationList();
-    document.getElementById('verification-section').style.display = 'block';
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    alert("Směna sestavena a PDF staženo!");
 }
 
 function renderVerificationList() {
