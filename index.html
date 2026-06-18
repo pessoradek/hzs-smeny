@@ -238,7 +238,7 @@ function init(){
         <div class="vehicle-card">
             <h3>${v.name}</h3>
             ${v.roles.map((r, rIndex) => {
-                // OPRAVA: Zde byly chybějící backticks (zpětné uvozovky)
+                // OPRAVA: Přidány zpětné uvozovky (backticks)
                 const roleId = `role-${vIndex}-${rIndex}`;
                 const labelText = r==='any'?'Hasič':r==='OD'?'Operační důstojník':r==='S'?'Strojník':'Velitel';
                 return `
@@ -362,6 +362,7 @@ function processShiftInit() {
     activeShiftMembers = [];
     let vehicleGroups = {};
 
+    // Kontrola, zda jsou načtení členové (prevence chyb při načítání)
     if (!members || members.length === 0) {
         return alert("Databáze členů se ještě načetla. Prosím, počkejte chvíli a obnovte stránku.");
     }
@@ -411,6 +412,7 @@ function processShiftInit() {
     document.getElementById('pdf-order-id').innerText = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
 
     let pdfHtml = '';
+    // Iterujeme přes skupiny vozidel (klíče objektu)
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
         <table style="width:100%; border-collapse: collapse; border-spacing: 0; margin-bottom: 15px; color: #000000; background: #fff; table-layout: fixed;">
@@ -421,11 +423,11 @@ function processShiftInit() {
         </tr>
         `;
         crew.forEach(person => {
-            // Přidáno !important na barvu textu pro jistotu při renderu
+            // Přidal jsem !important na barvu textu, aby si to html2pdf určitě nevykreslilo bílé na bílém
             pdfHtml += `
             <tr>
-                <td style="border: 1px solid #ccc; padding: 6px; width: 35%; font-weight: bold; color: #000 !important; background: #fff;">${person.role}</td>
-                <td style="border: 1px solid #ccc; padding: 6px; color: #000 !important; background: #fff;">${person.member}</td>
+                <td style="border: 1px solid #ccc; padding: 6px; width: 35%; font-weight: bold; color: #000 !important;">${person.role}</td>
+                <td style="border: 1px solid #ccc; padding: 6px; color: #000 !important;">${person.member}</td>
             </tr>
             `;
         });
@@ -488,7 +490,7 @@ async function finalizeShiftCount() {
     const date = new Date().toISOString().split('T')[0];
     let successCount = 0;
 
-    for (const current of activeShiftMembers) {
+    for (let current of activeShiftMembers) {
         const m = members.find(x => String(x.id) === String(current.id));
         if (m) {
             const { error } = await _db.from('members').update({ shift_count: (m.shift_count || 0) + 1, last_shift: date }).eq('id', m.id);
