@@ -28,7 +28,7 @@
         .form-row { display:flex; align-items:center; margin-bottom:8px; position:relative; }
         .form-row label { width:110px; font-size:0.85em; font-weight:bold; flex-shrink:0; }
         select, input[type="text"], input[type="number"] { 
-            box-sizing: border-box; width: 100%; padding:4px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
+            box-sizing: border-box; width: 100%; padding:8px; background:var(--input-bg); border:1px solid #555; color:white; border-radius:4px; 
             font-size:0.95em;
         }
         select:focus, input:focus { outline:1px solid var(--accent); border-color:var(--accent); }
@@ -81,7 +81,7 @@
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
         #pdf-export-container { position: absolute; left: -9999px; top: -9999px; width: 190mm; background: #ffffff !important; }
-        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 10px; font-size:11px; line-height:1.1; }
+        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 20px; }
     </style>
 </head>
 <body>
@@ -194,15 +194,15 @@
         <h3 style="color:#000000;">Osádky vozidel</h3>
         <div id="pdf-vehicle-groups" style="color:#000000;"></div>
 
-<br>
-<table style="width:100%;margin-top:15px;color:#000000;">
+        <br><br>
+        <table style="width:100%;margin-top:40px;color:#000000;">
             <tr>
                 <td style="width:50%;text-align:center;">_______________________<br>Operační důstojník</td>
                 <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
             </tr>
         </table>
         <br><br>
-        <div style="margin-top:10px;font-size:10px;color:#555;text-align:center;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
+        <div style="font-size:12px;color:#555;text-align:center;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
     </div>
 </div>
     
@@ -410,7 +410,7 @@ function processShiftInit() {
         pdfHtml += `
         <table style="width:100%; border-collapse:collapse; margin-bottom:15px; color:#000000;">
         <tr>
-            <th colspan="2" style="background:#c92a35; color:white; padding:4px; text-align:left;">
+            <th colspan="2" style="background:#c92a35; color:white; padding:8px; text-align:left;">
                 ${vehicle}
             </th>
         </tr>
@@ -418,8 +418,8 @@ function processShiftInit() {
         crew.forEach(person => {
             pdfHtml += `
             <tr>
-                <td style="border:1px solid #ccc; padding:3px; width:35%; font-weight:bold;">${person.role}</td>
-                <td style="border:1px solid #ccc; padding:3px;">${person.member}</td>
+                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">${person.role}</td>
+                <td style="border:1px solid #ccc; padding:6px;">${person.member}</td>
             </tr>
             `;
         });
