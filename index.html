@@ -438,13 +438,6 @@ crew.forEach(person => {
     </div>
     `;
 });
-
-    pdfHtml += `</div>`;
-    if (Object.keys(vehicleGroups).length === 1) {
-    pdfHtml += `
-    <div style="height:20px;"></div>
-    `;
-    }
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
     const element = document.getElementById('pdf-actual-content');
