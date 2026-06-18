@@ -80,8 +80,12 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
+        /* PDF EXPORT STYLY - Zmenšeno písmo a upraven kontejner */
         #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 190mm; background: #ffffff !important; }
-        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 20px; box-sizing: border-box; }
+        .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 15px; box-sizing: border-box; font-size: 12px; }
+        
+        /* Grid pro dvě vozidla vedle sebe v PDF */
+        .pdf-vehicles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -170,13 +174,13 @@
 
 <div id="pdf-export-container">
     <div id="pdf-actual-content" class="pdf-page">
-        <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:15px;margin-bottom:20px;">
-            <h1 style="margin:0;color:#c92a35;font-size:30px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
-            <h2 style="margin:5px 0;color:#000000;">DENNÍ ROZKAZ SMĚNY</h2>
-            <div style="font-size:12px;color:#666;">Evidenční číslo: <span id="pdf-order-id"></span></div>
+        <div style="text-align:center;border-bottom:3px solid #c92a35;padding-bottom:10px;margin-bottom:15px;">
+            <h1 style="margin:0;color:#c92a35;font-size:24px;">HASIČSKÝ ZÁCHRANNÝ SBOR</h1>
+            <h2 style="margin:3px 0;color:#000000;font-size:16px;">DENNÍ ROZKAZ SMĚNY</h2>
+            <div style="font-size:11px;color:#666;">Evidenční číslo: <span id="pdf-order-id"></span></div>
         </div>
 
-        <table style="width:100%;margin-bottom:20px;border-collapse:collapse;color:#000000;">
+        <table style="width:100%;margin-bottom:15px;border-collapse:collapse;color:#000000;font-size:12px;">
             <tr>
                 <td><b>Datum:</b> <span id="pdf-out-date"></span></td>
                 <td><b>Čas nástupu:</b> <span id="pdf-out-time"></span></td>
@@ -186,28 +190,25 @@
             </tr>
         </table>
 
-        <hr style="border:0;border-top:1px solid #ccc;">
-        <div style="background:#f2f2f2;padding:10px;border-left:4px solid #c92a35;margin-bottom:15px;color:black;font-weight:bold;">
+        <div style="background:#f2f2f2;padding:6px;border-left:4px solid #c92a35;margin-bottom:10px;color:black;font-weight:bold;font-size:12px;">
             Rozdělení příslušníků a techniky pro výkon služby
         </div>
 
-        <h3 style="color:#000000;">Osádky vozidel</h3>
-        <div id="pdf-vehicle-groups" style="color:#000000;"></div>
+        <h3 style="color:#000000;margin:10px 0 5px 0;font-size:14px;">Osádky vozidel</h3>
+        
+        <div id="pdf-vehicle-groups" class="pdf-vehicles-grid"></div>
 
-        <br><br>
-        <table style="width:100%;margin-top:40px;color:#000000;">
+        <table style="width:100%;margin-top:30px;color:#000000;font-size:11px;">
             <tr>
                 <td style="width:50%;text-align:center;">_______________________<br>Operační důstojník</td>
                 <td style="width:50%;text-align:center;">_______________________<br>Velitel směny</td>
             </tr>
         </table>
-        <br><br>
-        <div style="font-size:12px;color:#555;text-align:center;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
+        <div style="font-size:10px;color:#555;text-align:center;margin-top:20px;">Dokument vytvořen dne <span id="pdf-generated"></span></div>
     </div>
 </div>
     
 <script>
-// ZDE JSOU SPRÁVNÉ A FINÁLNÍ ÚDAJE PRO SUPABASE
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
 const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
@@ -408,9 +409,9 @@ function processShiftInit() {
     let pdfHtml = '';
     Object.entries(vehicleGroups).forEach(([vehicle, crew]) => {
         pdfHtml += `
-        <table style="width:100%; border-collapse:collapse; margin-bottom:15px; color:#000000;">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:5px; color:#000000; font-size:11px; page-break-inside: avoid;">
         <tr>
-            <th colspan="2" style="background:#c92a35; color:white; padding:8px; text-align:left;">
+            <th colspan="2" style="background:#c92a35; color:white; padding:5px; text-align:left; font-size:11px; font-weight:bold;">
                 ${vehicle}
             </th>
         </tr>
@@ -418,8 +419,8 @@ function processShiftInit() {
         crew.forEach(person => {
             pdfHtml += `
             <tr>
-                <td style="border:1px solid #ccc; padding:6px; width:35%; font-weight:bold;">${person.role}</td>
-                <td style="border:1px solid #ccc; padding:6px;">${person.member}</td>
+                <td style="border:1px solid #ccc; padding:4px; width:35%; font-weight:bold;">${person.role}</td>
+                <td style="border:1px solid #ccc; padding:4px;">${person.member}</td>
             </tr>
             `;
         });
