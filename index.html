@@ -80,7 +80,6 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* Nastavení šířky pro čistý export obrázku */
         #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 800px; background: #ffffff !important; }
         .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 25px; box-sizing: border-box; font-size: 13px; }
         .pdf-vehicles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 10px; }
@@ -216,7 +215,7 @@
     
 <script>
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
-const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2leXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
+const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
 
 const ALL_COURSES = ['V','S','Z','KBJ','P','LI','D','L','CH','ZPP','OD','SSP'];
@@ -441,24 +440,19 @@ function processShiftInit() {
 
     document.getElementById('pdf-vehicle-groups').innerHTML = pdfHtml;
     
-    // Generování OBRÁZKU pomocí HTML2CANVAS
     const element = document.getElementById('pdf-export-container');
-    
-    // Dočasně zviditelníme kontejner pro vyfocení, aby byl správně vyrenderován
     element.style.position = 'static';
     element.style.left = '0';
 
     html2canvas(document.getElementById('pdf-actual-content'), {
-        scale: 2, // Vysoká kvalita obrázku
+        scale: 2, 
         backgroundColor: '#ffffff',
         logging: false,
         useCORS: true
     }).then(canvas => {
-        // Schováme kontejner zpět
         element.style.position = 'fixed';
         element.style.left = '-9999px';
 
-        // Vytvoříme odkaz ke stažení obrázku
         const link = document.createElement('a');
         link.download = `Smenovnice_${dnyDatum.replace(/\s/g, '')}.png`;
         link.href = canvas.toDataURL('image/png');
