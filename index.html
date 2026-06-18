@@ -80,7 +80,7 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* OPRAVA SOUŘADNIC PRO HTML2CANVAS SQUASH */
+        /* FIX SOUŘADNIC PRO UKONČENÍ MEZER A MIZENÍ OBSAHU */
         #pdf-export-container { position: fixed; left: 0; top: 0; width: 190mm; z-index: -9999; background: #ffffff !important; pointer-events: none; }
         .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 15px; box-sizing: border-box; }
     </style>
@@ -353,7 +353,7 @@ function renderTable(){
     `).join('');
 }
 
-// --- OPRAVENÉ GENEROVÁNÍ PDF NA JEDNU STRÁNKU BEZ MEZER ---
+// --- ZCELA OPRAVENÉ GENEROVÁNÍ PDF S FIXNÍM SCROLLEM ---
 function processShiftInit() {
     const hiddenInputs = document.querySelectorAll('.hidden-member-id');
     activeShiftMembers = [];
@@ -437,7 +437,7 @@ function processShiftInit() {
             logging: false, 
             useCORS: true, 
             backgroundColor: '#ffffff',
-            scrollY: 0, // Vynucení nulového scrollu vymaže horní mezeru
+            scrollY: 0, // Vynutí zachycení od absolutního vršku elementu
             scrollX: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
