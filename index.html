@@ -80,7 +80,6 @@
         .verification-panel { background:#252525; border: 2px dashed var(--success); padding: 20px; border-radius: 8px; margin-top: 25px; display: none; }
         .verif-row { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
 
-        /* OPRAVENO: Kontejnér odsunut fixně hluboko mimo viditelnou plochu */
         #pdf-export-container { position: fixed; left: -9999px; top: 0; width: 190mm; background: #ffffff !important; }
         .pdf-page { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 20px; box-sizing: border-box; }
     </style>
@@ -208,6 +207,7 @@
 </div>
     
 <script>
+// ZDE JSOU SPRÁVNÉ A FINÁLNÍ ÚDAJE PRO SUPABASE
 const sb_url = 'https://gawleyyyvfaqdfuxwdco.supabase.co';
 const sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhd2xleXl5dmZhcWRmdXh3ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDE4MjIsImV4cCI6MjA4NDU3NzgyMn0.0ApUn-Mbz6L7hyotwrevr_1OCz42-EbqHAFkQUUYQ4o';
 const _db = supabase.createClient(sb_url, sb_key);
